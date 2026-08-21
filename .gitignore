@@ -1,0 +1,11 @@
+.superpowers/
+node_modules/
+dist/
+src-tauri/target/
+
+# 편집기/OS
+.DS_Store
+.idea/
+
+# 설계 문서 (저장소 제외)
+docs/superpowers/

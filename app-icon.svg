@@ -1,0 +1,27 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1c2234"/>
+      <stop offset="0.55" stop-color="#0e1119"/>
+      <stop offset="1" stop-color="#08090d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 512) scale(540)">
+      <stop offset="0" stop-color="#8b93ff" stop-opacity="0.18"/>
+      <stop offset="0.55" stop-color="#8b93ff" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#8b93ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="8" y="8" width="1008" height="1008" rx="230" fill="url(#bg)"/>
+  <rect x="8" y="8" width="1008" height="1008" rx="230" fill="url(#glow)"/>
+  <rect x="22" y="22" width="980" height="980" rx="216" stroke="#ffffff" stroke-opacity="0.07" stroke-width="8"/>
+
+  <g transform="translate(512 512)" stroke-linecap="round" fill="none">
+    <circle r="408" stroke="#5ab7ff" stroke-width="62" transform="rotate(150)"
+      stroke-dasharray="1330 130 973.5 130"/>
+    <circle r="294" stroke="#8b93ff" stroke-width="62" transform="rotate(-35)"
+      stroke-dasharray="1717 130.3"/>
+    <circle r="180" stroke="#d7dbff" stroke-width="62"/>
+    <circle r="84" fill="#ffb340" stroke="none"/>
+  </g>
+</svg>
