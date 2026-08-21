@@ -1,4 +1,5 @@
 import { open as openDialogRaw } from "@tauri-apps/plugin-dialog";
+import { strings } from "./i18n";
 import { api } from "./ipc/api";
 import { hasFilter, useStore } from "./store";
 
@@ -49,7 +50,7 @@ export async function jumpKind(kind: "error" | "warn" | "match", dir: 1 | -1) {
   if (kind === "match") {
     const { spec, total, cursor, cursorRow } = t.search;
     if (!spec || total === 0) {
-      s.pushToast("검색 결과가 없습니다");
+      s.pushToast(strings().toast.noSearchResults);
       return;
     }
     const cursorVisible = cursor !== null && cursorRow !== null && cursorRow >= vp.top && cursorRow <= vp.bottom;
@@ -74,7 +75,7 @@ export async function jumpKind(kind: "error" | "warn" | "match", dir: 1 | -1) {
       }
     }
     if (!res) {
-      s.pushToast("현재 필터 뷰에 표시된 매치가 없습니다");
+      s.pushToast(strings().toast.noMatchesInView);
       return;
     }
     const [row, ordinal] = res;
@@ -82,7 +83,7 @@ export async function jumpKind(kind: "error" | "warn" | "match", dir: 1 | -1) {
     unfollowFocused();
     bus.jump(row);
     if (wrapped) {
-      s.pushToast(dir > 0 ? "처음 매치로 순환했습니다" : "마지막 매치로 순환했습니다");
+      s.pushToast(dir > 0 ? strings().toast.wrappedFirstMatch : strings().toast.wrappedLastMatch);
     }
     return;
   }
@@ -101,10 +102,10 @@ export async function jumpKind(kind: "error" | "warn" | "match", dir: 1 | -1) {
     unfollowFocused();
     bus.jump(row);
     if (wrapped) {
-      s.pushToast(dir > 0 ? "처음 에러로 순환했습니다" : "마지막 에러로 순환했습니다");
+      s.pushToast(dir > 0 ? strings().toast.wrappedFirstError : strings().toast.wrappedLastError);
     }
   } else {
-    s.pushToast("표시된 뷰에 에러가 없습니다");
+    s.pushToast(strings().toast.noErrorsInView);
   }
 }
 
@@ -119,7 +120,7 @@ export async function jumpToLine(line: number) {
     unfollowFocused();
     bus.jump(row);
   } else {
-    s.pushToast("해당 라인이 현재 뷰에 없습니다", "필터에 의해 숨겨졌을 수 있습니다");
+    s.pushToast(strings().toast.lineNotInView, strings().toast.maybeHidden);
   }
 }
 
@@ -127,8 +128,8 @@ export async function openFileDialog() {
   const picked = await openDialogRaw({
     multiple: true,
     filters: [
-      { name: "로그 파일", extensions: ["log", "txt", "jsonl", "ndjson", "out", "err"] },
-      { name: "모든 파일", extensions: ["*"] },
+      { name: strings().dialog.logFiles, extensions: ["log", "txt", "jsonl", "ndjson", "out", "err"] },
+      { name: strings().dialog.allFiles, extensions: ["*"] },
     ],
   });
   if (!picked) return;

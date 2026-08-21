@@ -1,6 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useState } from "react";
 import { openFileDialog } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { GroupLeaf, useStore } from "../store";
 import { Mark } from "./Mark";
 import { QuickFilter } from "./QuickFilter";
@@ -17,10 +18,21 @@ export function TitleBar() {
       <div style={{ flex: 1 }} data-tauri-drag-region />
       <QuickFilter />
       <div className="winctl">
-        <button onClick={() => void win.minimize()}>&#xE921;</button>
-        <button onClick={() => void win.toggleMaximize()}>&#xE922;</button>
-        <button className="x" onClick={() => void win.close()}>
-          &#xE8BB;
+        <button aria-label="Minimize" onClick={() => void win.minimize()}>
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </button>
+        <button aria-label="Maximize" onClick={() => void win.toggleMaximize()}>
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <rect x="1.2" y="1.2" width="7.6" height="7.6" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </button>
+        <button className="x" aria-label="Close" onClick={() => void win.close()}>
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" strokeWidth="1" />
+            <line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" strokeWidth="1" />
+          </svg>
         </button>
       </div>
     </div>
@@ -39,6 +51,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
   const removeRecent = useStore((s) => s.removeRecent);
   const [menu, setMenu] = useState<{ x: number; y: number; tabId: number } | null>(null);
   const [addMenu, setAddMenu] = useState<{ x: number; y: number } | null>(null);
+  const S = useStrings();
 
   const groupTabs = group.data.tabIds
     .map((id) => tabs.find((t) => t.id === id))
@@ -74,7 +87,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
       ))}
       <div
         className="tab-add"
-        title="파일 열기 · 최근 파일"
+        title={S.titlebar.openFileMenu}
         onClick={(e) => {
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
           setAddMenu({ x: Math.min(rect.left, window.innerWidth - 380), y: rect.bottom + 4 });
@@ -85,10 +98,10 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
       <div style={{ flex: 1 }} />
       {isFocusedGroup && group.data.activeTabId !== null && (
         <>
-          <span className="stripbtn" title="pane 오른쪽 분할 — 같은 파일 (Alt+\)" onClick={() => splitPane("row")}>
+          <span className="stripbtn" title={S.titlebar.splitRightSame} onClick={() => splitPane("row")}>
             ◫
           </span>
-          <span className="stripbtn" title="pane 아래 분할 — 같은 파일 (Alt+-)" onClick={() => splitPane("col")}>
+          <span className="stripbtn" title={S.titlebar.splitDownSame} onClick={() => splitPane("col")}>
             ⬓
           </span>
         </>
@@ -104,7 +117,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
                 void openFileDialog();
               }}
             >
-              <span className="ic">⊕</span>파일 열기…<kbd style={{ marginLeft: "auto" }}>Ctrl O</kbd>
+              <span className="ic">⊕</span>{S.titlebar.openFileItem}<kbd style={{ marginLeft: "auto" }}>Ctrl O</kbd>
             </div>
             {recents.length > 0 && <div className="ctxsep" />}
             {recents.map((r) => (
@@ -121,7 +134,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
                 <span className="mitxt">{r}</span>
                 <span
                   className="midel"
-                  title="최근 목록에서 제거"
+                  title={S.common.removeRecent}
                   onClick={(e) => {
                     e.stopPropagation();
                     removeRecent(r);
@@ -145,7 +158,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
                 setMenu(null);
               }}
             >
-              <span className="ic">◫</span>오른쪽에 분할 — 다른 파일 나란히
+              <span className="ic">◫</span>{S.titlebar.splitRightGroup}
             </div>
             <div
               className="mi"
@@ -154,7 +167,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
                 setMenu(null);
               }}
             >
-              <span className="ic">⬓</span>아래에 분할
+              <span className="ic">⬓</span>{S.titlebar.splitDownGroup}
             </div>
             <div
               className="mi"
@@ -163,7 +176,7 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
                 setMenu(null);
               }}
             >
-              <span className="ic">✕</span>탭 닫기
+              <span className="ic">✕</span>{S.titlebar.closeTab}
             </div>
           </div>
         </>

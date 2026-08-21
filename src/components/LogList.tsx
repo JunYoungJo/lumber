@@ -1,6 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { registerBus, unregisterBus } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { SmoothFollower } from "../follower";
 import { fmtInt, fmtTs } from "../format";
 import { LineOut } from "../ipc/api";
@@ -87,6 +88,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
   const patchView = useStore((s) => s.patchView);
   const toggleBookmark = useStore((s) => s.toggleBookmark);
   const bookmarkMap = useStore((s) => s.bookmarks);
+  const S = useStrings();
   useSyncExternalStore(lineCache.subscribe, lineCache.getVersion);
   const bookmarkLines = tab ? (bookmarkMap[tab.path] ?? NO_BOOKMARKS) : NO_BOOKMARKS;
 
@@ -254,7 +256,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                         e.stopPropagation();
                         toggleBookmark(tab.path, cached.line, cached.text.slice(0, 48));
                       }}
-                      title="북마크"
+                      title={S.common.bookmark}
                     >
                       ⚑
                     </span>
@@ -285,7 +287,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
           stickBottom();
         }}
       >
-        ↓ 새 로그 {fmtInt(pendingNew)}줄
+        {S.logList.newLines(fmtInt(pendingNew))}
       </div>
       {ctxMenu && (
         <>
@@ -301,12 +303,12 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                 setCtxMenu(null);
               }}
             >
-              <span className="ic">≡</span>행 상세
+              <span className="ic">≡</span>{S.logMenu.lineDetails}
             </div>
             {ctxMenu.sel !== "" && (
               <>
                 <div className="mi" onClick={() => ctxAction((t) => useStore.getState().runSearch(tabId, { pattern: t, regex: false, case_sensitive: false }))}>
-                  <span className="ic">🔍</span>검색
+                  <span className="ic">🔍</span>{S.logMenu.search}
                 </div>
                 <div
                   className="mi"
@@ -321,7 +323,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                     })
                   }
                 >
-                  <span className="ic">◧</span>포함 필터에 추가
+                  <span className="ic">◧</span>{S.logMenu.addInclude}
                 </div>
                 <div
                   className="mi"
@@ -336,7 +338,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                     })
                   }
                 >
-                  <span className="ic">⊘</span>숨김 필터에 추가
+                  <span className="ic">⊘</span>{S.logMenu.addExclude}
                 </div>
                 <div
                   className="mi"
@@ -348,7 +350,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                     })
                   }
                 >
-                  <span className="ic">🖍</span>하이라이트 규칙 추가
+                  <span className="ic">🖍</span>{S.logMenu.addHighlight}
                 </div>
               </>
             )}
@@ -362,7 +364,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                   setCtxMenu(null);
                 }}
               >
-                <span className="ic">⊟</span>이 pane 닫기
+                <span className="ic">⊟</span>{S.logMenu.closePane}
               </div>
             )}
             <div
@@ -372,7 +374,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
                 setCtxMenu(null);
               }}
             >
-              <span className="ic">⧉</span>{ctxMenu.sel ? "선택 복사" : "라인 복사"}
+              <span className="ic">⧉</span>{ctxMenu.sel ? S.common.copySelection : S.common.copyLine}
             </div>
           </div>
         </>

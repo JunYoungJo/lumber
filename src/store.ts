@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Lang, setLangDict, strings } from "./i18n";
 import { api, FilterSpec, LevelRule, Overview, PatternSpec, TabInfo } from "./ipc/api";
 import { findLeaf, leaf, leaves, removeLeaf, setSizes, splitLeaf, SplitDir, TreeLeaf, TreeNode } from "./splitTree";
 
@@ -178,6 +179,7 @@ interface Store {
   viewStates: Record<string, ViewUiState>;
   focusedView: string | null;
   theme: "dark" | "light";
+  lang: Lang;
   paletteOpen: boolean;
   paletteInitial: string;
   shortcutsOpen: boolean;
@@ -205,6 +207,7 @@ interface Store {
   runSearch(id: number, spec: PatternSpec | null): void;
   toggleLevel(id: number, levels: readonly number[]): void;
   setTheme(theme: "dark" | "light"): void;
+  setLang(lang: Lang): void;
   setPaletteOpen(open: boolean, initial?: string): void;
   setShortcutsOpen(open: boolean): void;
   addRule(path: string, rule: HighlightRule): void;
@@ -308,6 +311,7 @@ export const useStore = create<Store>((set, get) => ({
   viewStates: {},
   focusedView: null,
   theme: load<"dark" | "light">("lumber.theme", "dark"),
+  lang: load<Lang>("lumber.lang", "en"),
   paletteOpen: false,
   paletteInitial: "",
   shortcutsOpen: false,
@@ -366,7 +370,7 @@ export const useStore = create<Store>((set, get) => ({
       });
       void import("./ipc/events").then((m) => m.refreshOverview(info.id, 0));
     } catch (e) {
-      get().pushToast("파일을 열 수 없습니다", String(e), "err");
+      get().pushToast(strings().toast.cantOpenFile, String(e), "err");
     }
   },
 
@@ -406,7 +410,7 @@ export const useStore = create<Store>((set, get) => ({
     const src = groupOfTab(s.groupTree, tabId);
     if (!src) return;
     if (src.data.tabIds.length === 1 && groupLeaves(s.groupTree).length === 1) {
-      s.pushToast("분할할 다른 탭이 없습니다", "같은 파일을 나눠 보려면 pane 분할(Ctrl+\\)을 사용하세요");
+      s.pushToast(strings().toast.noOtherTab, strings().toast.noOtherTabHint);
       return;
     }
     set((st) => {
@@ -459,7 +463,7 @@ export const useStore = create<Store>((set, get) => ({
     const paneId = Number(key.split(":")[1]);
     const tree = s.paneTrees[tabId];
     if (!tree || leaves(tree).length <= 1) {
-      s.pushToast("마지막 pane은 닫을 수 없습니다", "탭을 닫으려면 Ctrl+W");
+      s.pushToast(strings().toast.lastPane, strings().toast.lastPaneHint);
       return;
     }
     set((st) => {
@@ -512,7 +516,7 @@ export const useStore = create<Store>((set, get) => ({
     const t = get().tabs.find((x) => x.id === id);
     if (!t) return;
     api.setFilter(id, buildFilterSpec(t)).catch((e) => {
-      get().pushToast("필터 오류", String(e), "err");
+      get().pushToast(strings().toast.filterError, String(e), "err");
     });
   },
 
@@ -521,7 +525,7 @@ export const useStore = create<Store>((set, get) => ({
       search: { spec, total: 0, done: spec === null, scanned: 0, of: 0, cursor: null, cursorRow: null },
     });
     api.search(id, spec ? toPatternSpec(spec.pattern, spec.regex) : null).catch((e) => {
-      get().pushToast("검색 오류", String(e), "err");
+      get().pushToast(strings().toast.searchError, String(e), "err");
     });
   },
 
@@ -540,6 +544,13 @@ export const useStore = create<Store>((set, get) => ({
     save("lumber.theme", theme);
     document.documentElement.dataset.theme = theme;
     set({ theme });
+  },
+
+  setLang(lang) {
+    save("lumber.lang", lang);
+    setLangDict(lang);
+    document.documentElement.lang = lang;
+    set({ lang });
   },
 
   setPaletteOpen(open, initial = "") {
@@ -598,7 +609,7 @@ export const useStore = create<Store>((set, get) => ({
       await api.closeFile(open.id);
       set((s) => removeTabFromState(s as Store, open.id));
       await get().openPath(path);
-      get().pushToast("레벨 규칙 적용", "파일을 다시 인덱싱했습니다");
+      get().pushToast(strings().toast.levelRuleApplied, strings().toast.reindexed);
     }
   },
 
@@ -622,6 +633,8 @@ export const useStore = create<Store>((set, get) => ({
 }));
 
 document.documentElement.dataset.theme = useStore.getState().theme;
+setLangDict(useStore.getState().lang);
+document.documentElement.lang = useStore.getState().lang;
 
 if (import.meta.hot) {
   import.meta.hot.accept(() => {

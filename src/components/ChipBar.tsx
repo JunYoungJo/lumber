@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { jumpKind } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { fmtInt } from "../format";
 import { hasFilter, useStore } from "../store";
 
@@ -16,6 +17,7 @@ export function FilterChips() {
   const runSearch = useStore((s) => s.runSearch);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLSpanElement>(null);
+  const S = useStrings();
 
   if (!tab) return null;
   const tabId = tab.id;
@@ -29,14 +31,14 @@ export function FilterChips() {
   tab.includes.forEach((term, i) => {
     entries.push({
       icon: "◧",
-      label: `포함: ${term}`,
+      label: S.chip.include(term),
       clear: () => patchAndApply({ includes: tab.includes.filter((_, x) => x !== i) }),
     });
   });
   tab.excludes.forEach((term, i) => {
     entries.push({
       icon: "⊘",
-      label: `제외: ${term}`,
+      label: S.chip.exclude(term),
       clear: () => patchAndApply({ excludes: tab.excludes.filter((_, x) => x !== i) }),
     });
   });
@@ -50,7 +52,7 @@ export function FilterChips() {
   if (tab.levelsOff.length > 0) {
     entries.push({
       icon: "◫",
-      label: `${tab.levelsOff.length}개 레벨 숨김`,
+      label: S.chip.levelsHidden(tab.levelsOff.length),
       clear: () => patchAndApply({ levelsOff: [] }),
     });
   }
@@ -63,24 +65,24 @@ export function FilterChips() {
     <div className="sbchips">
       {hasFilter(tab) && (
         <span className="mono" style={{ color: "var(--acc)", flexShrink: 0 }}>
-          {fmtInt(tab.viewLen)} / {fmtInt(tab.totalLines)} 표시
-          {!tab.viewComplete && " · 필터링 중…"}
+          {S.chip.shown(fmtInt(tab.viewLen), fmtInt(tab.totalLines))}
+          {!tab.viewComplete && S.chip.filtering}
         </span>
       )}
       {tab.search.spec && (
-        <span className="chip" title={`검색: ${tab.search.spec.pattern}`}>
+        <span className="chip" title={S.chip.searchTitle(tab.search.spec.pattern)}>
           <span className="clip">🔍 {tab.search.spec.pattern}</span>
           {tab.search.done ? (
             <b style={{ flexShrink: 0 }}>
-              {tab.search.cursor !== null ? `${fmtInt(tab.search.cursor + 1)}/${fmtInt(tab.search.total)}` : `${fmtInt(tab.search.total)}건`}
+              {tab.search.cursor !== null ? `${fmtInt(tab.search.cursor + 1)}/${fmtInt(tab.search.total)}` : S.chip.hits(fmtInt(tab.search.total))}
             </b>
           ) : (
             <span className="searching">{fmtInt(tab.search.total)}…</span>
           )}
-          <span className="nav" title="이전 매치 (Ctrl+↑)" onClick={() => void jumpKind("match", -1)}>
+          <span className="nav" title={S.chip.prevMatch} onClick={() => void jumpKind("match", -1)}>
             ▲
           </span>
-          <span className="nav" title="다음 매치 (Ctrl+↓)" onClick={() => void jumpKind("match", 1)}>
+          <span className="nav" title={S.chip.nextMatch} onClick={() => void jumpKind("match", 1)}>
             ▼
           </span>
           <span className="x" onClick={() => runSearch(tabId, null)}>
@@ -92,10 +94,10 @@ export function FilterChips() {
         <span
           className={`chip clickable${open ? " open" : ""}`}
           ref={anchorRef}
-          title="클릭하여 필터 목록 열기"
+          title={S.chip.openFilterList}
           onClick={() => setOpen(!open)}
         >
-          <span className="clip">◧ 필터 {entries.length}</span>
+          <span className="clip">{S.chip.filters(entries.length)}</span>
           <span className="caret">{open ? "▾" : "▴"}</span>
         </span>
       )}
@@ -103,12 +105,12 @@ export function FilterChips() {
         <>
           <div className="fpop-scrim" onClick={() => setOpen(false)} />
           <div className="fpop" style={{ left: popLeft }}>
-            <div className="fpop-head">활성 필터</div>
+            <div className="fpop-head">{S.chip.activeFilters}</div>
             {entries.map((e, i) => (
               <div className="fpop-row" key={i}>
                 <span className="ic">{e.icon}</span>
                 <span className="ftext">{e.label}</span>
-                <span className="x" title="이 필터 제거" onClick={e.clear}>
+                <span className="x" title={S.chip.removeFilter} onClick={e.clear}>
                   ✕
                 </span>
               </div>
@@ -120,7 +122,7 @@ export function FilterChips() {
                 setOpen(false);
               }}
             >
-              ⟲ 모두 지우기
+              {S.chip.clearAll}
             </div>
           </div>
         </>

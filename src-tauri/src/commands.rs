@@ -35,7 +35,7 @@ fn tab_of(state: &State<'_, AppState>, id: u64) -> Result<Arc<TabState>, String>
         .unwrap()
         .get(&id)
         .cloned()
-        .ok_or_else(|| format!("탭 {}이(가) 없습니다", id))
+        .ok_or_else(|| format!("Tab {} not found", id))
 }
 
 #[derive(Serialize)]
@@ -60,9 +60,9 @@ pub async fn open_file(
     level_rules: Option<Vec<LevelRule>>,
 ) -> Result<TabInfo, String> {
     let pb = std::path::PathBuf::from(&path);
-    let meta = std::fs::metadata(&pb).map_err(|e| format!("파일을 열 수 없습니다: {}", e))?;
+    let meta = std::fs::metadata(&pb).map_err(|e| format!("Couldn't open file: {}", e))?;
     if !meta.is_file() {
-        return Err("파일이 아닙니다".into());
+        return Err("Not a file".into());
     }
     {
         let tabs = state.tabs.lock().unwrap();
@@ -226,7 +226,7 @@ pub async fn get_line_detail(state: State<'_, AppState>, id: u64, line: u32) -> 
         let index = tab.index.read().unwrap();
         let i = line as usize;
         if i >= index.lines.len() {
-            return Err("라인이 범위를 벗어났습니다".into());
+            return Err("Line out of range".into());
         }
         let m = &index.lines[i];
         let base = index.base_ts_ms.unwrap_or(0);

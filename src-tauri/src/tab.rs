@@ -253,7 +253,7 @@ fn io_loop(tab: Arc<TabState>) {
             Err(_) => {
                 if !missing_reported {
                     missing_reported = true;
-                    emitter.emit("file-error", json!({ "id": id, "message": "파일을 찾을 수 없습니다 — 재연결 대기 중" }));
+                    emitter.emit("file-error", json!({ "id": id, "message": "File not found — waiting to reconnect" }));
                 }
                 continue;
             }

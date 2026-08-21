@@ -297,9 +297,10 @@ kbd {
   border: none;
   background: transparent;
   color: var(--t3);
-  font-size: 11px;
   cursor: default;
-  font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .winctl button:hover {
   background: color-mix(in srgb, var(--t1) 6%, transparent);

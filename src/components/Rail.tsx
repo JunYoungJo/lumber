@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { jumpToLine } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { fmtInt } from "../format";
 import { Bookmark, LEVELS, useStore } from "../store";
 import { ColorPicker } from "./ColorPicker";
@@ -16,6 +17,7 @@ function AddLevelRule({ path }: { path: string }) {
   const setLevelRules = useStore((s) => s.setLevelRules);
   const [draft, setDraft] = useState<string | null>(null);
   const [draftLevel, setDraftLevel] = useState(3);
+  const S = useStrings();
 
   function commit() {
     if (draft?.trim()) {
@@ -46,7 +48,7 @@ function AddLevelRule({ path }: { path: string }) {
             className="inline"
             autoFocus
             value={draft}
-            placeholder="이 텍스트가 포함되면 위 레벨로 인식"
+            placeholder={S.rail.levelRulePlaceholder}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit();
@@ -55,8 +57,8 @@ function AddLevelRule({ path }: { path: string }) {
           />
         </div>
       ) : (
-        <div className="rit ghost" onClick={() => setDraft("")} title="레벨이 자동 인식되지 않는 로그 형식을 직접 지정합니다">
-          + 레벨 인식 규칙
+        <div className="rit ghost" onClick={() => setDraft("")} title={S.rail.addLevelRuleTitle}>
+          {S.rail.addLevelRule}
         </div>
       )}
     </>
@@ -90,6 +92,7 @@ export function Rail() {
   const [ruleDraft, setRuleDraft] = useState<string | null>(null);
   const [draftColor, setDraftColor] = useState(RULE_COLORS[0]);
   const [pickerFor, setPickerFor] = useState<number | "draft" | null>(null);
+  const S = useStrings();
 
   if (!tab) return null;
   const counts = tab.overview?.levelCounts;
@@ -99,7 +102,7 @@ export function Rail() {
 
   return (
     <div className="rail">
-      <h6>레벨</h6>
+      <h6>{S.rail.levels}</h6>
       {LEVELS.map((l) => {
         const isOff = l.ids.every((id) => tab.levelsOff.includes(id));
         return (
@@ -107,7 +110,7 @@ export function Rail() {
             <div
               className={`rit${isOff ? " off" : ""}`}
               onClick={() => toggleLevel(tab.id, l.ids)}
-              title={isOff ? "클릭하여 다시 표시" : "클릭하여 숨김"}
+              title={isOff ? S.rail.showAgain : S.rail.hide}
             >
               <span
                 className="sw"
@@ -122,7 +125,7 @@ export function Rail() {
             </div>
             {levelRules.map((r, i) =>
               (l.ids as readonly number[]).includes(r.level) ? (
-                <div key={i} className="rit sub" title={`"${r.pattern}" 포함 라인을 ${l.name}로 인식`}>
+                <div key={i} className="rit sub" title={S.rail.levelRuleTag(r.pattern, l.name)}>
                   <span className="subarrow">↳</span>
                   <span className="txt">{r.pattern}</span>
                   <span
@@ -139,14 +142,14 @@ export function Rail() {
       })}
       <AddLevelRule path={tab.path} />
 
-      <h6>하이라이트 규칙</h6>
+      <h6>{S.rail.highlightRules}</h6>
       {rules.map((r, i) => (
         <div key={i}>
           <div className="rit mono">
             <span
               className="sw swclick"
               style={{ background: r.color }}
-              title="클릭하여 색 변경"
+              title={S.rail.changeColor}
               onClick={(e) => {
                 e.stopPropagation();
                 setPickerFor(pickerFor === i ? null : i);
@@ -185,7 +188,7 @@ export function Rail() {
             <span
               className={`swpick custom${!RULE_COLORS.includes(draftColor) ? " sel" : ""}`}
               style={!RULE_COLORS.includes(draftColor) ? { background: draftColor } : undefined}
-              title="원하는 색 직접 선택"
+              title={S.rail.pickColor}
               onMouseDown={(e) => {
                 e.preventDefault();
                 setPickerFor(pickerFor === "draft" ? null : "draft");
@@ -199,7 +202,7 @@ export function Rail() {
             className="inline"
             autoFocus
             value={ruleDraft}
-            placeholder="패턴 입력 후 Enter"
+            placeholder={S.rail.patternPlaceholder}
             onChange={(e) => setRuleDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && ruleDraft.trim()) {
@@ -218,13 +221,13 @@ export function Rail() {
             setRuleDraft("");
           }}
         >
-          + 규칙 추가
+          {S.rail.addRule}
         </div>
       )}
 
       {bookmarks.length > 0 && (
         <>
-          <h6>북마크</h6>
+          <h6>{S.rail.bookmarks}</h6>
           {bookmarks.map((b) => (
             <div key={b.line} className="rit mono" onClick={() => void jumpToLine(b.line)} title={b.preview}>
               <span style={{ color: "var(--acc)" }}>⚑</span>

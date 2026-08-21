@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { focusBus } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { useStore } from "../store";
 
 export function QuickFilter() {
@@ -9,6 +10,7 @@ export function QuickFilter() {
   const [val, setVal] = useState("");
   const timer = useRef<number | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
+  const S = useStrings();
 
   useEffect(() => {
     setVal(tab?.includeDraft ?? "");
@@ -50,12 +52,12 @@ export function QuickFilter() {
   }
 
   return (
-    <div className={`qfilter${val || includeCount > 0 ? " active" : ""}`} title="즉시 필터 (/)">
+    <div className={`qfilter${val || includeCount > 0 ? " active" : ""}`} title={S.quickFilter.title}>
       <span className="qic">◧{includeCount > 0 ? ` ${includeCount}` : ""}</span>
       <input
         ref={inputRef}
         value={val}
-        placeholder={includeCount > 0 ? "조건 추가…" : "예: timeout"}
+        placeholder={includeCount > 0 ? S.quickFilter.placeholderMore : S.quickFilter.placeholderExample}
         spellCheck={false}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {

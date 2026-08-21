@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useStrings } from "../i18n/useStrings";
 
 export function hslToHex(h: number, s: number, l: number): string {
   const a = (s / 100) * Math.min(l / 100, 1 - l / 100);
@@ -45,6 +46,7 @@ export function ColorPicker({
   const [hue, setHue] = useState(Math.round(init.h));
   const [light, setLight] = useState(Math.round(Math.min(85, Math.max(30, init.l))));
   const hex = hslToHex(hue, 80, light);
+  const S = useStrings();
 
   function apply(h: number, l: number) {
     onChange(hslToHex(h, 80, l));
@@ -56,7 +58,7 @@ export function ColorPicker({
         <span className="cp-chip" style={{ background: hex }} />
         <code>{hex}</code>
         <span className="cp-done" onClick={onClose}>
-          완료
+          {S.common.done}
         </span>
       </div>
       <input

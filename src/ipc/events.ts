@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { strings } from "../i18n";
 import { lineCache } from "../lineCache";
 import { hasFilter, useStore } from "../store";
 import { LineOut } from "./api";
@@ -154,7 +155,7 @@ export async function wireEvents() {
     for (const key of Object.keys(s.viewStates)) {
       if (key.startsWith(`${p.id}:`)) s.patchView(key, { pendingNew: 0 });
     }
-    s.pushToast("파일이 교체되었습니다", t ? t.name + " — 다시 인덱싱합니다" : undefined);
+    s.pushToast(strings().toast.fileReplaced, t ? strings().toast.reindexing(t.name) : undefined);
   });
 
   await listen<{ id: number; message: string }>("file-error", ({ payload: p }) => {
@@ -163,7 +164,7 @@ export async function wireEvents() {
 
   await listen<{ id: number }>("file-recovered", ({ payload: p }) => {
     store().patchTab(p.id, { fileError: null });
-    store().pushToast("파일이 다시 연결되었습니다");
+    store().pushToast(strings().toast.fileReconnected);
   });
 
   await getCurrentWebview().onDragDropEvent((event) => {

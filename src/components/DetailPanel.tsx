@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useStrings } from "../i18n/useStrings";
 import { fmtInt, fmtTs } from "../format";
 import { api, LineDetail } from "../ipc/api";
 import { LEVEL_NAMES, useStore } from "../store";
@@ -10,6 +11,7 @@ export function DetailPanel() {
   const toggleBookmark = useStore((s) => s.toggleBookmark);
   const pushToast = useStore((s) => s.pushToast);
   const [detail, setDetail] = useState<LineDetail | null>(null);
+  const S = useStrings();
 
   const line = tab !== null && tab.detailOpen ? tab.selectedLine : null;
 
@@ -40,12 +42,12 @@ export function DetailPanel() {
     if (tab.fields.some((f) => f.key === key && f.value === v)) return;
     patchTab(tab.id, { fields: [...tab.fields, { key, value: v }] });
     queueMicrotask(() => applyFilter(tab.id));
-    pushToast("필드 필터 추가", `${key}: ${v.length > 60 ? v.slice(0, 60) + "…" : v}`);
+    pushToast(S.detail.fieldFilterAdded, `${key}: ${v.length > 60 ? v.slice(0, 60) + "…" : v}`);
   }
 
   function copy(text: string) {
     void navigator.clipboard.writeText(text);
-    pushToast("클립보드에 복사했습니다");
+    pushToast(S.detail.copied);
   }
 
   return (
@@ -53,14 +55,14 @@ export function DetailPanel() {
       {detail && tab && (
         <>
           <div className="dh">
-            <h4>행 상세</h4>
+            <h4>{S.detail.title}</h4>
             <span className="x" onClick={() => patchTab(tab.id, { detailOpen: false })}>
               ✕
             </span>
           </div>
           <div className="sub">
             L{fmtInt(detail.line + 1)}
-            {detail.ts !== null ? ` · ${fmtTs(detail.ts)}` : ""} · {LEVEL_NAMES[detail.level] || "일반"} · {tab.name}
+            {detail.ts !== null ? ` · ${fmtTs(detail.ts)}` : ""} · {LEVEL_NAMES[detail.level] || S.detail.levelPlain} · {tab.name}
           </div>
           <div className="dbody">
             {fields ? (
@@ -73,7 +75,7 @@ export function DetailPanel() {
                       <span className="k">{k}</span>
                       <span
                         className="v"
-                        title={isPrimitive ? "클릭하여 이 값으로 필터" : "클릭하여 복사"}
+                        title={isPrimitive ? S.detail.filterByValue : S.detail.clickToCopy}
                         onClick={() => (isPrimitive ? addFieldFilter(k, v) : copy(text))}
                       >
                         {text}
@@ -86,18 +88,18 @@ export function DetailPanel() {
             ) : (
               <pre>{detail.text}</pre>
             )}
-            {detail.truncated && <div style={{ color: "var(--t3)", fontSize: 10, marginTop: 6 }}>…256KB에서 잘렸습니다</div>}
+            {detail.truncated && <div style={{ color: "var(--t3)", fontSize: 10, marginTop: 6 }}>{S.detail.truncated}</div>}
           </div>
           <div className="dact">
             <span className="dchip" onClick={() => toggleBookmark(tab.path, detail.line, detail.text.slice(0, 48))}>
-              ⚑ 북마크
+              {S.detail.bookmark}
             </span>
             <span className="dchip ghost" onClick={() => copy(detail.text)}>
-              복사
+              {S.detail.copy}
             </span>
             {json !== null && (
               <span className="dchip ghost" onClick={() => copy(JSON.stringify(json, null, 2))}>
-                JSON 복사
+                {S.detail.copyJson}
               </span>
             )}
           </div>

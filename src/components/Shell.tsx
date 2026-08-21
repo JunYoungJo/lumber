@@ -1,5 +1,6 @@
 import { ReactNode, useRef } from "react";
 import { openFileDialog } from "../controller";
+import { useStrings } from "../i18n/useStrings";
 import { GroupLeaf, PaneTree, tabIdOfViewKey, useStore, viewKeyOf } from "../store";
 import { TreeLeaf, TreeNode } from "../splitTree";
 import { DetailPanel } from "./DetailPanel";
@@ -13,13 +14,14 @@ export function EmptyState() {
   const recents = useStore((s) => s.recents);
   const openPath = useStore((s) => s.openPath);
   const removeRecent = useStore((s) => s.removeRecent);
+  const S = useStrings();
   return (
     <div className="empty">
       <Mark className="bigmark" size={54} />
-      <h2>로그 파일을 끌어다 놓으세요</h2>
-      <p>또는 아래 버튼이나 Ctrl+O로 파일을 선택해 여세요</p>
+      <h2>{S.empty.dropHere}</h2>
+      <p>{S.empty.orOpen}</p>
       <button className="openbtn" onClick={() => void openFileDialog()}>
-        파일 열기 (Ctrl+O)
+        {S.empty.openFile}
       </button>
       {recents.length > 0 && (
         <div className="recent">
@@ -29,7 +31,7 @@ export function EmptyState() {
               <span className="txt">{r}</span>
               <span
                 className="del"
-                title="최근 목록에서 제거"
+                title={S.common.removeRecent}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeRecent(r);
