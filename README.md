@@ -4,9 +4,9 @@
 
 # Lumber
 
-**A modern, blazing-fast desktop log viewer.**
+**A modern, good-looking desktop log viewer.**
 
-Open GB-scale logs instantly, tail them live, and actually find what you're looking for.
+Tail logs live, search and filter without losing your place, and actually enjoy reading them.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
@@ -15,31 +15,40 @@ Open GB-scale logs instantly, tail them live, and actually find what you're look
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-lightgrey)
 
+<img src="docs/screenshots/hero.png" alt="Lumber main window" width="900" />
+
 </div>
 
 > Raw **logs** are just timber. Lumber planes them into something you can build with.
 
-Lumber is a desktop log viewer built for the moments that matter: a production incident, a gigabyte-sized file, and a terminal that chokes the moment you `tail -f` it. It keeps the original file on disk and only an index in memory, so opening a huge log is instant and scrolling stays smooth — while a keyboard-first UI gets you from "what happened?" to the exact line fast.
-
-## Screenshots
-
-> _Screenshots coming soon._
+Lumber is a desktop log viewer that tries to be genuinely pleasant to use: a clean, modern interface with the conveniences that make reading logs less tedious — live tail, search with highlighting, non-destructive filters, a command palette, split views, bookmarks, and a light or dark theme. It's a focused, read-only viewer, not a log platform.
 
 ## Features
 
-- ⚡ **Built for huge files** — A streaming indexer keeps just a compact per-line index in memory; the original never leaves disk. Open GB-scale logs immediately, with the indexed head available before the scan even finishes.
-- 📡 **Live tail (Follow)** — File-watcher–driven incremental indexing follows the tail in real time. Scroll up and Follow pauses with a "new lines" indicator; press `End` (or hit the bottom) to resume.
-- 🔎 **Instant search** — Plain or regex, case-insensitive, with every match highlighted (lines are never hidden), a live match count, and jump-to-next/previous. An invalid regex just keeps your last good result.
-- 🧪 **Non-destructive filters** — Include (AND across conditions, `A|B` for OR within one), exclude, level masks (ERROR-only, WARN and above), and JSON field conditions like `level:error service:api`.
-- 🚨 **Error navigation** — Jump straight to the next or previous error / warning, independent of your search.
-- ⌨️ **Command palette** — One `Ctrl+K` entry point for search, filter, highlight, go-to-line, go-to-time, navigation, and view actions. Any selected text is prefilled automatically.
-- 🖍️ **Highlight rules** — Color-code patterns without filtering anything out, managed from the left rail.
-- 🧾 **Row detail & JSON** — Right-click a row for a detail panel that pretty-prints JSON and lets you add a filter from any field value.
-- 🪟 **Split panes & tab groups** — Split the same file into panes, or place different files side by side. Multi-file tabs with a recents menu.
-- 🗺️ **Overview strip** — A histogram + minimap of error / warning / match density over time, with jump-to-timestamp.
-- 🎨 **Polished, themeable UI** — Dark-first design with a light theme, custom window chrome, and Inter + JetBrains Mono bundled for fully offline use.
-- 📐 **Format auto-detection** — Plain text (timestamp / level patterns) and JSON Lines, with lossy handling of broken UTF-8 so the viewer never dies on a bad byte.
-- ↩️ **Word-wrap toggle**, ⚑ **bookmarks**, and a keyboard-centric workflow throughout.
+- **Polished, themeable UI** — Dark-first design with a light theme a keystroke away, a custom title bar, and Inter + JetBrains Mono bundled for fully offline use.
+- **Live tail (Follow)** — Follows the tail of a growing file in real time. Scroll up and Follow pauses with a "new lines" indicator; press `End` (or hit the bottom) to resume.
+- **Search as you type** — Plain or regex, case-insensitive, with every match highlighted (lines are never hidden), a live match count, and jump-to-next/previous. An invalid regex just keeps your last good result.
+- **Non-destructive filters** — Include (AND across conditions, `A|B` for OR within one), exclude, level masks (ERROR-only, WARN and above), and JSON field conditions like `level:error service:api`.
+- **Error navigation** — Jump straight to the next or previous error / warning, independent of your search.
+- **Command palette** — One `Ctrl+K` entry point for search, filter, highlight, go-to-line, go-to-time, navigation, and view actions. Any selected text is prefilled automatically.
+- **Highlight rules** — Color-code patterns without filtering anything out, managed from the left rail.
+- **Row detail & JSON** — Right-click a row for a detail panel that pretty-prints JSON and lets you add a filter from any field value.
+- **Split panes & tab groups** — Split the same file into panes, or place different files side by side. Multi-file tabs with a recents menu.
+- **Overview strip** — A histogram and minimap of error / warning / match density, with jump-to-timestamp.
+- **English & Korean UI** — Switch languages on the fly from the status bar or the command palette.
+- **Format auto-detection** — Plain text (timestamp / level patterns) and JSON Lines, and it handles broken UTF-8 gracefully instead of choking on it.
+- **Reads on demand** — Lumber indexes the file and pulls in lines as you scroll rather than loading the whole thing into the page.
+- **Keyboard-centric workflow** — Word-wrap toggle, bookmarks, and keyboard navigation throughout.
+
+## Screenshots
+
+**Command palette** — one entry point for search, filter, highlight, and navigation:
+
+<img src="docs/screenshots/command-palette.png" alt="Command palette" width="820" />
+
+**Light theme** — dark-first, but a light theme is a keystroke away:
+
+<img src="docs/screenshots/light-theme.png" alt="Light theme" width="820" />
 
 ## Getting started
 
@@ -57,7 +66,7 @@ npm install
 # run the app in development (hot-reloading frontend + native window)
 npm run tauri dev
 
-# build a production desktop bundle for your platform
+# build a desktop bundle for your platform
 npm run tauri build
 ```
 
@@ -68,7 +77,7 @@ npm run dev     # frontend only, in the browser (no native APIs)
 npm test        # run the Vitest suite
 ```
 
-Want a big file to try it on? `node tools/gen-log.mjs` generates a synthetic log.
+Want a sample file to try it on? `node tools/gen-log.mjs` writes one and keeps appending to it, so you can watch live tail work.
 
 ## Keyboard shortcuts
 
@@ -110,16 +119,9 @@ Press `?` inside the app for the full, always-current list.
 | Select text, then `Ctrl+K` | Selection is prefilled in the palette |
 | Scroll up | Pause Follow |
 
-## How it works
+## Under the hood
 
-Lumber's guiding principle: **the original bytes stay on disk; only an index lives in memory.**
-
-- **Indexer** — Streams the file on a background thread, recording a fixed, compact record per line (byte offset + packed level / timestamp flags). Roughly 10M lines fit in a small, predictable footprint, and the indexed prefix is queryable before the scan completes.
-- **Watcher** — Uses [`notify`](https://crates.io/crates/notify) to incrementally index appended data and to detect truncation / rotation and re-index. The frontend only receives batched "line count changed" events, never raw line data.
-- **Query engine** — Runs search (plain / regex) and filters (level mask + include/exclude + JSON field conditions) off the UI thread. A generation counter cancels stale queries instantly, so typing stays responsive.
-- **Aggregator** — Bucketizes the file into the histogram and minimap density arrays that power the overview strip.
-
-Rows are then fetched by the virtualized list on demand, so only what's on screen is ever read back from disk.
+Lumber keeps the file on disk and holds a small per-line index in memory, reading lines back on demand as you scroll. A background watcher picks up appended lines for live tail and detects truncation / rotation, while search and filtering run off the UI thread. The frontend is a virtualized list, so only the visible rows are ever read back.
 
 ## Tech stack
 
@@ -138,15 +140,16 @@ Rows are then fetched by the virtualized list on demand, so only what's on scree
 
 ```
 lumber/
-├─ src/                  # React 19 + TypeScript frontend
-│  ├─ components/        # LogList, Rail, Palette, Minimap, DetailPanel, …
-│  ├─ ipc/              # typed Tauri command / event wrappers
-│  ├─ store.ts           # zustand store (tabs, filters, search, follow, panes)
-│  ├─ controller.ts      # cross-cutting actions & focus bus
+├─ src/                   # React 19 + TypeScript frontend
+│  ├─ components/         # LogList, Rail, Palette, Minimap, DetailPanel, …
+│  ├─ i18n/               # English / Korean UI strings
+│  ├─ ipc/                # typed Tauri command / event wrappers
+│  ├─ store.ts            # zustand store (tabs, filters, search, follow, panes)
+│  ├─ controller.ts       # cross-cutting actions & focus bus
 │  └─ follower · lineCache · splitTree · format
-├─ src-tauri/            # Rust backend
-│  └─ src/               # index · tab · query · aggregate · commands (IPC)
-└─ tools/gen-log.mjs     # synthetic log generator for testing
+├─ src-tauri/             # Rust backend
+│  └─ src/                # index · tab · query · aggregate · commands (IPC)
+└─ tools/gen-log.mjs      # synthetic log generator for testing
 ```
 
 ## Roadmap
@@ -157,7 +160,7 @@ Deliberately out of scope for now, but on the radar:
 - A merged, multi-file timeline view
 - Remote sources (SSH, Docker, network streams)
 
-Lumber is, and intends to stay, a fast read-only **viewer** — it never modifies your logs.
+Lumber is, and intends to stay, a read-only **viewer** — it never modifies your logs.
 
 ## Contributing
 
