@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "windows": {
       "nsis": {
         "installerIcon": "icons/icon.ico"
@@ -41,5 +42,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5MUYwNUU0N0UyNDZFQ0UKUldUT2JpUis1QVVmeWZuVG9sUkhlWkRTemZuN2RTRENVb1dMTVIveHhOaCtiSXdlYmJtbENhd2gK",
+      "endpoints": [
+        "https://github.com/JunYoungJo/lumber/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

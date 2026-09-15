@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { focusedBus, jumpKind, jumpToLine, openFileDialog } from "../controller";
 import { useStrings } from "../i18n/useStrings";
 import { useStore } from "../store";
+import { useUpdate } from "../update";
 import { RULE_COLORS } from "./Rail";
 
 export function Palette() {
@@ -203,6 +204,14 @@ export function Palette() {
     viewItems.push(item("v-theme", () => (setTheme(theme === "dark" ? "light" : "dark"), done()), theme === "dark" ? "☀" : "☾", themeLabel, { kbd: "Ctrl T" }));
   }
   if (matches(S.palette.openFile) || matches(S.palette.tokOpen)) viewItems.push(item("v-open", () => (void openFileDialog(), done()), "⊕", S.palette.openFile, { kbd: "Ctrl O" }));
+  // 열린 탭이 없어도 동작해야 하므로 navItems/controlItems가 아니라 viewItems에 넣는다.
+  if (matches(S.update.checkNow))
+    viewItems.push(
+      item("v-update", () => {
+        void useUpdate.getState().check(true);
+        done();
+      }, "↑", S.update.checkNow, { desc: S.update.checkNowDesc }),
+    );
   if (matches(S.palette.tokLang)) {
     viewItems.push(item("lang-en", () => (setLang("en"), done()), lang === "en" ? "◉" : "○", S.lang.english));
     viewItems.push(item("lang-ko", () => (setLang("ko"), done()), lang === "ko" ? "◉" : "○", S.lang.korean));

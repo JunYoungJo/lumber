@@ -52,6 +52,15 @@ Lumber is a desktop log viewer that tries to be genuinely pleasant to use: a cle
 
 ## Getting started
 
+### Install
+
+Download the latest build from the [Releases](https://github.com/JunYoungJo/lumber/releases) page. Once installed, Lumber checks for new releases on launch and can update itself.
+
+Lumber isn't code-signed yet, so the first launch shows a warning:
+
+- **macOS** — right-click the app and choose *Open*, then confirm. Only needed once.
+- **Windows** — SmartScreen shows "Windows protected your PC". Click *More info* → *Run anyway*.
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
