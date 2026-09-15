@@ -1,6 +1,6 @@
 [package]
 name = "lumber"
-version = "0.1.2"
+version = "0.1.3"
 description = "Lumber — modern log viewer"
 authors = ["jyjo"]
 edition = "2021"
