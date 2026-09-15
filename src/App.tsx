@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { focusBus, focusedBus, jumpKind, openFileDialog } from "./controller";
 import { wireEvents } from "./ipc/events";
 import { useStore } from "./store";
+import { useUpdate } from "./update";
 import { Palette } from "./components/Palette";
 import { Toasts, Workspace } from "./components/Shell";
 
@@ -46,6 +47,9 @@ export default function App() {
     if (!w.__lumberWired) {
       w.__lumberWired = true;
       void wireEvents();
+      // 초기 인덱싱과 네트워크 요청이 겹치지 않도록 조금 미룬다.
+      // 실패해도 조용히 넘어가므로(update.ts의 check 참고) 정리(cleanup)는 필요 없다.
+      setTimeout(() => void useUpdate.getState().check(false), 3000);
     }
   }, []);
 
