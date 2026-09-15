@@ -1572,7 +1572,9 @@ kbd {
   font-size: 10px;
 }
 .status .right {
-  margin-left: 4px;
+  /* 보통은 .sbchips의 flex:1이 밀어주지만, 열린 파일이 없으면 그 요소가 없다.
+     auto 여백이 두 경우 모두를 덮는다. */
+  margin-left: auto;
   display: flex;
   gap: 12px;
   align-items: center;

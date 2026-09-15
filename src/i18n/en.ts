@@ -50,6 +50,7 @@ export const en = {
     bookmarks: "Bookmarks",
   },
   statusbar: {
+    noFile: "No file open",
     text: "Text",
     autoDetected: "auto-detected",
     indexing: (pct: number) => `Indexing ${pct}%`,

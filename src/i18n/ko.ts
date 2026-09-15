@@ -50,6 +50,7 @@ export const ko: Strings = {
     bookmarks: "북마크",
   },
   statusbar: {
+    noFile: "열린 파일 없음",
     text: "텍스트",
     autoDetected: "자동 감지",
     indexing: (pct) => `인덱싱 ${pct}%`,
