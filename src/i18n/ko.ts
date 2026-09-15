@@ -25,8 +25,6 @@ export const ko: Strings = {
     splitDownSame: "pane 아래 분할 — 같은 파일 (Alt+-)",
     openFileMenu: "파일 열기 · 최근 파일",
     openFileItem: "파일 열기…",
-    splitRightGroup: "오른쪽에 분할 — 다른 파일 나란히",
-    splitDownGroup: "아래에 분할",
     closeTab: "탭 닫기",
   },
   quickFilter: {

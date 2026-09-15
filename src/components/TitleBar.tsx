@@ -66,6 +66,17 @@ function DraggableTab({
     id: tabDndId(tabId),
   });
 
+  // 휠클릭은 Windows에서 자동 스크롤 모드를 켠다. 눌리는 시점에 막아야 한다.
+  // 드래그와는 부딪히지 않는다 — dnd-kit의 PointerSensor는 주 버튼에만 반응한다.
+  const blockMiddleAutoScroll = (e: React.MouseEvent) => {
+    if (e.button === 1) e.preventDefault();
+  };
+  const closeOnMiddle = (e: React.MouseEvent) => {
+    if (e.button !== 1) return;
+    e.preventDefault();
+    onClose();
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -73,6 +84,8 @@ function DraggableTab({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       onClick={onActivate}
       onContextMenu={onContext}
+      onMouseDown={blockMiddleAutoScroll}
+      onAuxClick={closeOnMiddle}
       title={path}
       {...attributes}
       {...listeners}
@@ -99,7 +112,6 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
   const recents = useStore((s) => s.recents);
   const setActiveTab = useStore((s) => s.setActiveTab);
   const closeTab = useStore((s) => s.closeTab);
-  const moveTabToSplit = useStore((s) => s.moveTabToSplit);
   const splitPane = useStore((s) => s.splitPane);
   const openPath = useStore((s) => s.openPath);
   const removeRecent = useStore((s) => s.removeRecent);
@@ -199,24 +211,6 @@ export function GroupTabStrip({ group }: { group: GroupLeaf }) {
         <>
           <div className="fpop-scrim" onMouseDown={() => setMenu(null)} />
           <div className="ctxmenu" style={{ left: menu.x, top: menu.y }}>
-            <div
-              className="mi"
-              onClick={() => {
-                moveTabToSplit(menu.tabId, "row");
-                setMenu(null);
-              }}
-            >
-              <span className="ic">◫</span>{S.titlebar.splitRightGroup}
-            </div>
-            <div
-              className="mi"
-              onClick={() => {
-                moveTabToSplit(menu.tabId, "col");
-                setMenu(null);
-              }}
-            >
-              <span className="ic">⬓</span>{S.titlebar.splitDownGroup}
-            </div>
             <div
               className="mi"
               onClick={() => {

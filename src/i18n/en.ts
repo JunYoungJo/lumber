@@ -25,8 +25,6 @@ export const en = {
     splitDownSame: "Split pane down — same file (Alt+-)",
     openFileMenu: "Open file · Recent files",
     openFileItem: "Open file…",
-    splitRightGroup: "Split right — files side by side",
-    splitDownGroup: "Split down",
     closeTab: "Close tab",
   },
   quickFilter: {
