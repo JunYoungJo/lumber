@@ -157,6 +157,108 @@ describe("store actions", () => {
     expect(groupLeaves(useStore.getState().groupTree)).toHaveLength(1);
   });
 
+  it("dropTabOnGroup center는 분할 없이 대상 그룹에 합류시킨다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    useStore.getState().moveTabToSplit(2, "row");
+    expect(groupLeaves(useStore.getState().groupTree)).toHaveLength(2);
+
+    const first = groupLeaves(useStore.getState().groupTree)[0];
+    useStore.getState().dropTabOnGroup(2, first.id, "center");
+    const groups = groupLeaves(useStore.getState().groupTree);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].data.tabIds).toEqual([1, 2]);
+    expect(groups[0].data.activeTabId).toBe(2);
+  });
+
+  it("dropTabOnGroup right는 대상 오른쪽에 새 그룹을 만든다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    useStore.getState().dropTabOnGroup(2, g.id, "right");
+    const groups = groupLeaves(useStore.getState().groupTree);
+    expect(groups).toHaveLength(2);
+    expect(groups[0].data.tabIds).toEqual([1]);
+    expect(groups[1].data.tabIds).toEqual([2]);
+  });
+
+  it("dropTabOnGroup left는 대상 왼쪽에 새 그룹을 만든다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    useStore.getState().dropTabOnGroup(2, g.id, "left");
+    const groups = groupLeaves(useStore.getState().groupTree);
+    expect(groups).toHaveLength(2);
+    expect(groups[0].data.tabIds).toEqual([2]);
+    expect(groups[1].data.tabIds).toEqual([1]);
+  });
+
+  it("dropTabOnGroup bottom은 세로로 쪼갠다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    useStore.getState().dropTabOnGroup(2, g.id, "bottom");
+    const tree = useStore.getState().groupTree;
+    if (tree.kind !== "split") throw new Error("split 아님");
+    expect(tree.dir).toBe("col");
+    expect(groupLeaves(tree).map((l) => l.data.tabIds)).toEqual([[1], [2]]);
+  });
+
+  it("옮겨서 원래 그룹이 비면 그 그룹은 사라진다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    useStore.getState().moveTabToSplit(2, "row");
+    const first = groupLeaves(useStore.getState().groupTree)[0];
+    // 2번만 있던 그룹이 비므로 걷힌다
+    useStore.getState().dropTabOnGroup(2, first.id, "center");
+    expect(groupLeaves(useStore.getState().groupTree)).toHaveLength(1);
+  });
+
+  it("탭이 하나뿐인 자기 그룹에 떨어뜨리면 아무 일도 없다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    const before = useStore.getState().groupTree;
+    useStore.getState().dropTabOnGroup(1, g.id, "right");
+    expect(useStore.getState().groupTree).toBe(before);
+    expect(groupLeaves(useStore.getState().groupTree)).toHaveLength(1);
+  });
+
+  it("자기 그룹 center에 떨어뜨리면 제자리라 아무 일도 없다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    const before = useStore.getState().groupTree;
+    useStore.getState().dropTabOnGroup(2, g.id, "center");
+    expect(useStore.getState().groupTree).toBe(before);
+  });
+
+  it("reorderTabInGroup은 같은 그룹 안에서 순서를 바꾼다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    await useStore.getState().openPath("C:/b.log");
+    await useStore.getState().openPath("C:/c.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    expect(g.data.tabIds).toEqual([1, 2, 3]);
+    useStore.getState().reorderTabInGroup(g.id, 3, 1);
+    expect(groupLeaves(useStore.getState().groupTree)[0].data.tabIds).toEqual([1, 3, 2]);
+  });
+
+  it("reorderTabInGroup은 그룹에 없는 탭을 무시한다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    const g = groupLeaves(useStore.getState().groupTree)[0];
+    const before = useStore.getState().groupTree;
+    useStore.getState().reorderTabInGroup(g.id, 99, 0);
+    expect(useStore.getState().groupTree).toBe(before);
+  });
+
   it("closeTab은 다음 탭을 활성화한다", async () => {
     const { useStore } = await fresh();
     await useStore.getState().openPath("C:/a.log");

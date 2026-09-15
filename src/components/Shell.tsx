@@ -9,6 +9,7 @@ import { LogList } from "./LogList";
 import { Mark } from "./Mark";
 import { Minimap } from "./Minimap";
 import { Rail } from "./Rail";
+import { TabDndProvider, useGroupDrop } from "./TabDnd";
 
 export function EmptyState() {
   const recents = useStore((s) => s.recents);
@@ -141,9 +142,10 @@ function GroupView({ group }: { group: GroupLeaf }) {
   const tab = useStore((s) => s.tabs.find((t) => t.id === activeTabId) ?? null);
   const paneTree = useStore((s) => (activeTabId !== null ? (s.paneTrees[activeTabId] as PaneTree | undefined) : undefined));
   const resizePaneSplit = useStore((s) => s.resizePaneSplit);
+  const dropRef = useGroupDrop(group.id);
 
   return (
-    <div className="group">
+    <div className="group" ref={dropRef}>
       <GroupTabStrip group={group} />
       {tab?.fileError && <div className="banner">⚠ {tab.fileError}</div>}
       {activeTabId !== null && paneTree ? (
@@ -177,18 +179,20 @@ export function Workspace() {
   }
 
   return (
-    <div className="body">
-      <Rail />
-      <div className="main">
-        <div className="groupsroot">
-          <SplitTreeView
-            node={groupTree}
-            renderLeaf={(g) => <GroupView group={g} />}
-            onResize={resizeGroupSplit}
-          />
+    <TabDndProvider>
+      <div className="body">
+        <Rail />
+        <div className="main">
+          <div className="groupsroot">
+            <SplitTreeView
+              node={groupTree}
+              renderLeaf={(g) => <GroupView group={g} />}
+              onResize={resizeGroupSplit}
+            />
+          </div>
+          <DetailPanel />
         </div>
-        <DetailPanel />
       </div>
-    </div>
+    </TabDndProvider>
   );
 }

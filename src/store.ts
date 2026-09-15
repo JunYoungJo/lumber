@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Lang, setLangDict, strings } from "./i18n";
 import { api, FilterSpec, LevelRule, Overview, PatternSpec, TabInfo } from "./ipc/api";
 import { findLeaf, leaf, leaves, removeLeaf, setSizes, splitLeaf, SplitDir, TreeLeaf, TreeNode } from "./splitTree";
+import { Zone } from "./dragZone";
 
 export const LEVELS = [
   { ids: [5, 6], name: "Error", cssVar: "--err" },
@@ -196,6 +197,8 @@ interface Store {
   setActiveTab(groupId: number, tabId: number): void;
   focusView(key: string): void;
   moveTabToSplit(tabId: number, dir: SplitDir): void;
+  dropTabOnGroup(tabId: number, targetGroupId: number, zone: Zone): void;
+  reorderTabInGroup(groupId: number, tabId: number, toIndex: number): void;
   splitPane(dir: SplitDir): void;
   closePane(): void;
   cycleTab(delta: 1 | -1): void;
@@ -436,6 +439,78 @@ export const useStore = create<Store>((set, get) => ({
         focusedView: firstPaneKey(st.paneTrees, tabId),
       };
     });
+  },
+
+  /// 탭을 대상 그룹 위에 떨어뜨린다. center는 그 그룹에 합류, 나머지는 방향대로 분할.
+  /// moveTabToSplit이 "자기 그룹을 쪼갠다"였다면 이쪽은 "임의의 그룹에 놓는다"이다.
+  dropTabOnGroup(tabId, targetGroupId, zone) {
+    const s = get();
+    const src = groupOfTab(s.groupTree, tabId);
+    const target = findLeaf(s.groupTree, targetGroupId) as GroupLeaf | null;
+    if (!src || !target) return;
+
+    const sameGroup = src.id === target.id;
+    // 제자리: 자기 그룹 가운데이거나, 혼자뿐인 그룹을 자기 자신에서 떼어내는 경우
+    if (sameGroup && (zone === "center" || src.data.tabIds.length === 1)) return;
+
+    set((st) => {
+      const remain = src.data.tabIds.filter((t) => t !== tabId);
+      const remainActive =
+        src.data.activeTabId === tabId ? (remain[remain.length - 1] ?? null) : src.data.activeTabId;
+
+      let groupTree = st.groupTree;
+      let focusedGroupId: number;
+
+      if (zone === "center") {
+        const tgt = findLeaf(groupTree, targetGroupId) as GroupLeaf;
+        groupTree = updateGroupData(groupTree, target.id, {
+          tabIds: [...tgt.data.tabIds, tabId],
+          activeTabId: tabId,
+        });
+        focusedGroupId = target.id;
+      } else {
+        const dir: SplitDir = zone === "left" || zone === "right" ? "row" : "col";
+        const before = zone === "left" || zone === "top";
+        const newGroupId = nextNode();
+        groupTree = splitLeaf(
+          groupTree,
+          target.id,
+          dir,
+          leaf(newGroupId, { tabIds: [tabId], activeTabId: tabId }),
+          nextNode(),
+          before,
+        );
+        focusedGroupId = newGroupId;
+      }
+
+      // 원래 그룹 정리는 항상 마지막에. 먼저 걷어내면 대상 id가 사라질 수 있다.
+      if (remain.length === 0) {
+        groupTree = removeLeaf(groupTree, src.id) ?? groupTree;
+      } else {
+        groupTree = updateGroupData(groupTree, src.id, { tabIds: remain, activeTabId: remainActive });
+      }
+
+      return {
+        groupTree,
+        focusedGroupId,
+        activeId: tabId,
+        focusedView: firstPaneKey(st.paneTrees, tabId),
+      };
+    });
+  },
+
+  reorderTabInGroup(groupId, tabId, toIndex) {
+    const s = get();
+    const group = findLeaf(s.groupTree, groupId) as GroupLeaf | null;
+    if (!group) return;
+    const from = group.data.tabIds.indexOf(tabId);
+    if (from < 0) return;
+    const to = Math.max(0, Math.min(toIndex, group.data.tabIds.length - 1));
+    if (from === to) return;
+    const tabIds = [...group.data.tabIds];
+    tabIds.splice(from, 1);
+    tabIds.splice(to, 0, tabId);
+    set((st) => ({ groupTree: updateGroupData(st.groupTree, groupId, { ...group.data, tabIds }) }));
   },
 
   splitPane(dir) {
