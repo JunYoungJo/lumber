@@ -41,3 +41,36 @@ describe("splitTree", () => {
     expect(removeLeaf(t, 1)).toBeNull();
   });
 });
+
+describe("splitLeaf before", () => {
+  it("before=true면 새 리프가 대상 앞에 온다", () => {
+    let t: TreeNode<string> = leaf(1, "a");
+    t = splitLeaf(t, 1, "row", leaf(2, "b"), 100, true);
+    expect(leaves(t).map((l) => l.data)).toEqual(["b", "a"]);
+  });
+
+  it("같은 방향 split 안에서도 앞에 삽입된다", () => {
+    let t: TreeNode<string> = leaf(1, "a");
+    t = splitLeaf(t, 1, "row", leaf(2, "b"), 100);
+    expect(leaves(t).map((l) => l.data)).toEqual(["a", "b"]);
+    t = splitLeaf(t, 2, "row", leaf(3, "c"), 101, true);
+    expect(leaves(t).map((l) => l.data)).toEqual(["a", "c", "b"]);
+    if (t.kind !== "split") throw new Error("split 아님");
+    expect(t.sizes.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
+  });
+
+  it("생략하면 기존처럼 뒤에 삽입된다", () => {
+    let t: TreeNode<string> = leaf(1, "a");
+    t = splitLeaf(t, 1, "row", leaf(2, "b"), 100);
+    t = splitLeaf(t, 1, "row", leaf(3, "c"), 101);
+    expect(leaves(t).map((l) => l.data)).toEqual(["a", "c", "b"]);
+  });
+
+  it("다른 방향이면 before도 중첩 split에서 앞에 온다", () => {
+    let t: TreeNode<string> = leaf(1, "a");
+    t = splitLeaf(t, 1, "col", leaf(2, "b"), 100, true);
+    if (t.kind !== "split") throw new Error("split 아님");
+    expect(t.dir).toBe("col");
+    expect(leaves(t).map((l) => l.data)).toEqual(["b", "a"]);
+  });
+});

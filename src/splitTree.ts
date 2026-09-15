@@ -38,28 +38,32 @@ export function updateLeaf<T>(node: TreeNode<T>, id: number, data: T): TreeNode<
 
 /// target 리프를 dir 방향으로 분할해 newLeaf를 뒤에 붙인다.
 /// 부모 split의 방향이 같으면 형제로 삽입하고, 다르면 새 split으로 감싼다.
+/// `before`가 true면 새 리프를 대상 앞에 놓는다. 드롭 존의 왼쪽·위쪽에 필요하다.
 export function splitLeaf<T>(
   node: TreeNode<T>,
   targetId: number,
   dir: SplitDir,
   newLeaf: TreeLeaf<T>,
   splitId: number,
+  before = false,
 ): TreeNode<T> {
   if (node.kind === "leaf") {
     if (node.id !== targetId) return node;
-    return { kind: "split", id: splitId, dir, children: [node, newLeaf], sizes: [0.5, 0.5] };
+    const children = before ? [newLeaf, node] : [node, newLeaf];
+    return { kind: "split", id: splitId, dir, children, sizes: [0.5, 0.5] };
   }
   const idx = node.children.findIndex((c) => c.kind === "leaf" && c.id === targetId);
   if (idx >= 0 && node.dir === dir) {
+    const at = before ? idx : idx + 1;
     const children = [...node.children];
-    children.splice(idx + 1, 0, newLeaf);
+    children.splice(at, 0, newLeaf);
     const shrink = node.sizes[idx] / 2;
     const sizes = [...node.sizes];
     sizes[idx] = shrink;
-    sizes.splice(idx + 1, 0, shrink);
+    sizes.splice(at, 0, shrink);
     return { ...node, children, sizes };
   }
-  return { ...node, children: node.children.map((c) => splitLeaf(c, targetId, dir, newLeaf, splitId)) };
+  return { ...node, children: node.children.map((c) => splitLeaf(c, targetId, dir, newLeaf, splitId, before)) };
 }
 
 /// 리프를 제거하고, 자식이 하나 남은 split은 그 자식으로 대체한다.

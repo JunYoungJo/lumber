@@ -29,7 +29,7 @@ const TARGETS = [
 function main() {
   const version = process.argv[2];
   if (!version || !/^\d+\.\d+\.\d+$/.test(version)) {
-    console.error("사용법: npm run release -- <x.y.z>");
+    console.error("사용법: pnpm release <x.y.z>");
     process.exit(1);
   }
 
