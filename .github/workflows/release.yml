@@ -22,10 +22,12 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     env:
-      # secrets는 if: 에서 직접 읽을 수 없어 env로 올린다. 인증서를 붙이기 전까지
-      # 아래 서명 스텝들은 값이 비어 있어 저절로 건너뛴다.
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      # secrets는 if: 에서 직접 읽을 수 없어 env를 거쳐야 한다. 다만 인증서 "값"을 잡
+      # 레벨에 올리면 tauri-action 스텝에도 보이고, tauri 번들러는 APPLE_CERTIFICATE가
+      # 정의돼 있기만 하면 빈 값이어도 security import를 시도하다 실패한다.
+      # 그래서 값이 아니라 있는지 여부만 올린다.
+      HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
+      HAS_WINDOWS_CERT: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -51,8 +53,9 @@ jobs:
 
       # --- OS 코드 서명 자리. 시크릿을 채우면 저절로 켜진다. ---
       - name: import apple certificate
-        if: matrix.platform == 'macos-latest' && env.APPLE_CERTIFICATE != ''
+        if: matrix.platform == 'macos-latest' && env.HAS_APPLE_CERT == 'true'
         env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
@@ -66,8 +69,9 @@ jobs:
           rm certificate.p12
 
       - name: import windows certificate
-        if: matrix.platform == 'windows-latest' && env.WINDOWS_CERTIFICATE != ''
+        if: matrix.platform == 'windows-latest' && env.HAS_WINDOWS_CERT == 'true'
         env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         run: |
           New-Item -ItemType directory -Path certificate
@@ -81,11 +85,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # OS 코드 서명을 켤 때 아래 주석을 푼다. 빈 값으로 두면 번들러가 서명을
+          # 시도하다 실패하므로, 인증서가 실제로 생기기 전까지는 정의하지 않는다.
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Lumber ${{ github.ref_name }}'
