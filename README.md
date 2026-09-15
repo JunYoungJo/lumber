@@ -76,26 +76,28 @@ Updates install in place and don't repeat these steps.
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
+- [pnpm](https://pnpm.io/installation) — the repo pins a version through `packageManager`, so `corepack enable` is enough if you'd rather not install it globally
 - [Rust](https://www.rust-lang.org/tools/install) (stable) and the [Tauri 2 system prerequisites](https://tauri.app/start/prerequisites/) for your OS
 
 ### Run & build
 
 ```bash
 # install frontend dependencies
-npm install
+pnpm install
 
 # run the app in development (hot-reloading frontend + native window)
-npm run tauri dev
+pnpm tauri dev
 
 # build a desktop bundle for your platform
-npm run tauri build
+pnpm tauri build
 ```
 
 Other handy scripts:
 
 ```bash
-npm run dev     # frontend only, in the browser (no native APIs)
-npm test        # run the Vitest suite
+pnpm dev        # frontend only, in the browser (no native APIs)
+pnpm test       # run the Vitest suite
+pnpm release <x.y.z>   # bump every version file, commit, and tag
 ```
 
 Want a sample file to try it on? `node tools/gen-log.mjs` writes one and keeps appending to it, so you can watch live tail work.
