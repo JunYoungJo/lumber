@@ -71,6 +71,8 @@ Lumber isn't code-signed yet, so the first launch shows a warning:
 - **macOS** — right-click the app and choose *Open*, then confirm. Only needed once.
 - **Windows** — SmartScreen shows "Windows protected your PC". Click *More info* → *Run anyway*.
 
+Updates install in place and don't repeat these steps.
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
