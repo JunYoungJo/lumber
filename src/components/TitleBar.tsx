@@ -3,8 +3,86 @@ import { useState } from "react";
 import { openFileDialog } from "../controller";
 import { useStrings } from "../i18n/useStrings";
 import { GroupLeaf, useStore } from "../store";
+import { badgeVisible, useUpdate } from "../update";
 import { Mark } from "./Mark";
 import { QuickFilter } from "./QuickFilter";
+
+// 스토어가 작고 배지가 거의 모든 필드를 읽으므로 선택자 없이 통째로 구독한다.
+// 업데이트 상태는 초당 수십 번 바뀌지 않아 재렌더 비용이 문제되지 않는다.
+function UpdateBadge() {
+  const s = useUpdate();
+  const S = useStrings();
+  if (!badgeVisible(s)) return null;
+
+  const pct = s.total > 0 ? Math.min(100, Math.round((s.downloaded / s.total) * 100)) : 0;
+
+  return (
+    <>
+      <span
+        className={`upd-badge${s.phase === "error" ? " bad" : ""}`}
+        title={S.update.badgeTitle}
+        onClick={() => s.setPopoverOpen(!s.popoverOpen)}
+      >
+        {s.phase === "downloading" ? `${pct}%` : "↑"}
+      </span>
+      {s.popoverOpen && (
+        <>
+          <div className="fpop-scrim" onMouseDown={() => s.setPopoverOpen(false)} />
+          <div className="ctxmenu upd-pop">
+            {s.phase === "checking" && <div className="upd-line">{S.update.checking}</div>}
+            {s.phase === "idle" && <div className="upd-line">{S.update.upToDate}</div>}
+            {s.phase === "error" && (
+              <>
+                <div className="upd-line">{S.update.failed}</div>
+                <div className="upd-sub">{s.error}</div>
+                <div className="mi" onClick={() => void s.check(true)}>
+                  <span className="ic">⟳</span>
+                  {S.update.retry}
+                </div>
+              </>
+            )}
+            {s.phase === "available" && s.version && (
+              <>
+                <div className="upd-line">{S.update.available(s.version)}</div>
+                {s.notes && (
+                  <>
+                    <div className="upd-sub">{S.update.notesHead}</div>
+                    <div className="upd-notes">{s.notes}</div>
+                  </>
+                )}
+                <div className="mi" onClick={() => void s.install()}>
+                  <span className="ic">⤓</span>
+                  {S.update.installNow}
+                </div>
+                <div className="mi" onClick={() => s.setPopoverOpen(false)}>
+                  <span className="ic">⏱</span>
+                  {S.update.later}
+                </div>
+              </>
+            )}
+            {s.phase === "downloading" && (
+              <>
+                <div className="upd-line">{S.update.downloading}</div>
+                <span className="progress">
+                  <i style={{ width: `${pct}%` }} />
+                </span>
+              </>
+            )}
+            {s.phase === "ready" && (
+              <>
+                <div className="upd-line">{S.update.ready}</div>
+                <div className="mi" onClick={() => void s.restart()}>
+                  <span className="ic">⟲</span>
+                  {S.update.restart}
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
 
 export function TitleBar() {
   const win = getCurrentWindow();
@@ -17,6 +95,7 @@ export function TitleBar() {
       </div>
       <div style={{ flex: 1 }} data-tauri-drag-region />
       <QuickFilter />
+      <UpdateBadge />
       <div className="winctl">
         <button aria-label="Minimize" onClick={() => void win.minimize()}>
           <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
