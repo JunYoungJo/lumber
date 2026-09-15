@@ -291,9 +291,10 @@ kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 26px;
+  gap: 5px;
   height: 20px;
-  padding: 0 7px;
+  padding: 0 9px;
+  white-space: nowrap;
   border: 1px solid color-mix(in srgb, var(--acc) 45%, transparent);
   border-radius: 6px;
   background: var(--acc-soft);
@@ -306,17 +307,33 @@ kbd {
 .upd-badge:hover {
   border-color: var(--acc);
 }
+.upd-badge .upd-ic {
+  font-size: 11px;
+  line-height: 1;
+}
 .upd-badge.bad {
   border-color: color-mix(in srgb, var(--err) 45%, transparent);
   background: color-mix(in srgb, var(--err) 10%, transparent);
   color: var(--err);
 }
 .upd-pop {
-  top: 46px;
+  /* 배지가 상태바(하단)에 있으므로 위로 펼친다 */
+  top: auto;
+  bottom: 36px;
   right: 12px;
   left: auto;
   max-width: 320px;
   padding: 9px;
+}
+.upd-pop .upd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.upd-pop .upd-pct {
+  font-family: var(--font-mono);
+  color: var(--acc);
 }
 .upd-pop .upd-line {
   padding: 3px 7px 6px;
@@ -1602,6 +1619,7 @@ kbd {
   box-shadow: inset 0 0 0 1px var(--hair2);
 }
 .progress {
+  display: block;
   height: 3px;
   border-radius: 2px;
   background: var(--hair);

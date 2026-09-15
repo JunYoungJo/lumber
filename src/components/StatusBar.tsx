@@ -3,6 +3,7 @@ import { useStrings } from "../i18n/useStrings";
 import { fmtBytes, fmtInt } from "../format";
 import { useStore } from "../store";
 import { FilterChips } from "./ChipBar";
+import { UpdateBadge } from "./UpdateBadge";
 
 export function StatusBar() {
   const tab = useStore((s) => s.tabs.find((t) => t.id === s.activeId) ?? null);
@@ -57,6 +58,7 @@ export function StatusBar() {
       )}
       <FilterChips />
       <div className="right">
+        <UpdateBadge />
         {tab && (
           <span
             className={`sbtn${tab.wrap ? " on" : ""}`}

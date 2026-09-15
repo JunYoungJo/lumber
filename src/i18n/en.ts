@@ -210,6 +210,8 @@ export const en = {
     korean: "한국어",
   },
   update: {
+    badge: "Update",
+    badgeReady: "Restart",
     badgeTitle: "Update",
     checking: "Checking for updates…",
     upToDate: "You're on the latest version",

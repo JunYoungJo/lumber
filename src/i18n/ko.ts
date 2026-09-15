@@ -210,6 +210,8 @@ export const ko: Strings = {
     korean: "한국어",
   },
   update: {
+    badge: "업데이트",
+    badgeReady: "재시작",
     badgeTitle: "업데이트",
     checking: "업데이트 확인 중…",
     upToDate: "최신 버전입니다",
