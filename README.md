@@ -54,7 +54,17 @@ Lumber is a desktop log viewer that tries to be genuinely pleasant to use: a cle
 
 ### Install
 
-Download the latest build from the [Releases](https://github.com/JunYoungJo/lumber/releases) page. Once installed, Lumber checks for new releases on launch and can update itself.
+Grab a build from the [Releases](https://github.com/JunYoungJo/lumber/releases) page:
+
+| Platform | File |
+| --- | --- |
+| macOS (Apple Silicon) | `Lumber_<version>_aarch64.dmg` |
+| macOS (Intel) | `Lumber_<version>_x64.dmg` |
+| Windows | `Lumber_<version>_x64_en-US.msi` |
+
+On Windows, prefer the `.msi`. A `-setup.exe` is also published, but updates ship as an `.msi`, so installing from the `.exe` can leave you with two entries in Installed apps.
+
+Once installed, Lumber checks for a new release at startup and shows a badge in the title bar when one exists. You choose whether to install it and when to restart. There's also a *Check for updates* entry in the command palette.
 
 Lumber isn't code-signed yet, so the first launch shows a warning:
 

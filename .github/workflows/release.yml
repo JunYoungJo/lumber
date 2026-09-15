@@ -95,7 +95,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Lumber ${{ github.ref_name }}'
-          releaseBody: '아래 에셋에서 내려받으세요. 설치된 Lumber는 이 릴리즈를 공개하면 스스로 업데이트를 알립니다.'
+          releaseBody: 'Download a build from the assets below. Installed copies of Lumber will offer this update once the release is published.'
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
