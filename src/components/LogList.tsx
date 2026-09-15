@@ -116,6 +116,13 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
     overscan: 24,
   });
 
+  // wrap에서 잰 행 높이는 nowrap에서 무효다. nowrap에서는 measureElement를 붙이지
+  // 않아 다시 재지 않으므로, 측정 캐시를 비우지 않으면 늘어난 높이가 그대로 남아
+  // 행 사이가 빈 줄처럼 벌어진다.
+  useEffect(() => {
+    virtualizer.measure();
+  }, [virtualizer, wrap]);
+
   useEffect(() => {
     registerBus(viewKey, {
       jump: (row: number) => {
