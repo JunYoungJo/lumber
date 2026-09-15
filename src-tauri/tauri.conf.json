@@ -45,7 +45,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5MUYwNUU0N0UyNDZFQ0UKUldUT2JpUis1QVVmeWZuVG9sUkhlWkRTemZuN2RTRENVb1dMTVIveHhOaCtiSXdlYmJtbENhd2gK",
       "endpoints": [
         "https://github.com/JunYoungJo/lumber/releases/latest/download/latest.json"
       ]
