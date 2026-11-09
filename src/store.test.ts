@@ -144,6 +144,47 @@ describe("store actions", () => {
     expect(useStore.getState().activeId).toBe(1);
   });
 
+  it("탭 전환은 각 탭의 스크롤 위치와 follow 상태를 보존한다", async () => {
+    const { useStore } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    const a = useStore.getState().focusedView!;
+    useStore.getState().patchView(a, { follow: false, scrollTop: 99 * 24 });
+    await useStore.getState().openPath("C:/b.log");
+    const b = useStore.getState().focusedView!;
+    expect(useStore.getState().viewStates[b].scrollTop).toBe(0);
+    useStore.getState().patchView(b, { follow: false, scrollTop: 499 * 24 });
+
+    for (let i = 0; i < 3; i++) {
+      useStore.getState().cycleTab(1);
+      expect(useStore.getState().focusedView).toBe(a);
+      expect(useStore.getState().focusedViewState()).toMatchObject({ follow: false, scrollTop: 99 * 24 });
+      useStore.getState().cycleTab(1);
+      expect(useStore.getState().focusedView).toBe(b);
+      expect(useStore.getState().focusedViewState()).toMatchObject({ follow: false, scrollTop: 499 * 24 });
+    }
+  });
+
+  it("분할창의 위치는 독립적이며 탭 이동 후에도 보존된다", async () => {
+    const { useStore, groupLeaves } = await fresh();
+    await useStore.getState().openPath("C:/a.log");
+    const first = useStore.getState().focusedView!;
+    useStore.getState().patchView(first, { follow: false, scrollTop: 2400 });
+    useStore.getState().splitPane("row");
+    const second = useStore.getState().focusedView!;
+    expect(useStore.getState().viewStates[second].scrollTop).toBe(0);
+    useStore.getState().patchView(second, { scrollTop: 12000 });
+    await useStore.getState().openPath("C:/b.log");
+    useStore.getState().moveTabToSplit(1, "row");
+    expect(groupLeaves(useStore.getState().groupTree)).toHaveLength(2);
+    expect(useStore.getState().viewStates[first].scrollTop).toBe(2400);
+    expect(useStore.getState().viewStates[second].scrollTop).toBe(12000);
+    useStore.getState().closeTab(1);
+    // unmount cleanup must not recreate a closed tab's view state.
+    useStore.getState().patchView(first, { scrollTop: 2400 });
+    expect(useStore.getState().viewStates[first]).toBeUndefined();
+    expect(useStore.getState().viewStates[second]).toBeUndefined();
+  });
+
   it("moveTabToSplit은 탭을 새 그룹으로 옮긴다", async () => {
     const { useStore, groupLeaves } = await fresh();
     await useStore.getState().openPath("C:/a.log");

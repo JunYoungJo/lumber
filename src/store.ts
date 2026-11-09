@@ -78,10 +78,11 @@ export type GroupLeaf = TreeLeaf<GroupData>;
 /// pane = 같은 탭(파일) 안의 뷰포트 분할
 export type PaneTree = TreeNode<null>;
 
-/// 뷰포트별 UI 상태 (스크롤 추적은 DOM이 소유)
+/// 뷰포트별 UI 상태. 비활성 탭의 스크롤 위치도 보존한다.
 export interface ViewUiState {
   follow: boolean;
   pendingNew: number;
+  scrollTop: number;
 }
 
 export function viewKeyOf(tabId: number, paneId: number): string {
@@ -367,7 +368,7 @@ export const useStore = create<Store>((set, get) => ({
           groupTree,
           focusedGroupId: focused.id,
           paneTrees: { ...s.paneTrees, [info.id]: leaf(paneId, null) },
-          viewStates: { ...s.viewStates, [key]: { follow: true, pendingNew: 0 } },
+          viewStates: { ...s.viewStates, [key]: { follow: true, pendingNew: 0, scrollTop: 0 } },
           focusedView: key,
         };
       });
@@ -525,7 +526,7 @@ export const useStore = create<Store>((set, get) => ({
     const newKey = viewKeyOf(tabId, newPaneId);
     set((st) => ({
       paneTrees: { ...st.paneTrees, [tabId]: splitLeaf(tree, paneId, dir, leaf(newPaneId, null), nextNode()) },
-      viewStates: { ...st.viewStates, [newKey]: { follow: false, pendingNew: 0 } },
+      viewStates: { ...st.viewStates, [newKey]: { follow: false, pendingNew: 0, scrollTop: 0 } },
       focusedView: newKey,
     }));
   },

@@ -152,7 +152,7 @@ function GroupView({ group }: { group: GroupLeaf }) {
         <div className="groupbody">
           <SplitTreeView
             node={paneTree}
-            renderLeaf={(pane) => <Viewport viewKey={viewKeyOf(activeTabId, pane.id)} />}
+            renderLeaf={(pane) => <Viewport key={viewKeyOf(activeTabId, pane.id)} viewKey={viewKeyOf(activeTabId, pane.id)} />}
             onResize={(splitId, sizes) => resizePaneSplit(activeTabId, splitId, sizes)}
           />
         </div>

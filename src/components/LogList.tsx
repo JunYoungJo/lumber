@@ -1,5 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { registerBus, unregisterBus } from "../controller";
 import { useStrings } from "../i18n/useStrings";
 import { SmoothFollower } from "../follower";
@@ -114,7 +114,19 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_H,
     overscan: 24,
+    initialOffset: view?.scrollTop ?? 0,
   });
+
+  // 탭을 떠나거나 wrap이 스크롤 DOM을 교체하기 전에 위치를 저장한다.
+  // layout cleanup에서 기존 엘리먼트를 읽어야 DOM 제거/축소로 인한 0을 저장하지 않는다.
+  useLayoutEffect(() => {
+    const el = parentRef.current;
+    if (!el) return;
+    virtualizer.scrollToOffset(useStore.getState().viewStates[viewKey]?.scrollTop ?? 0);
+    return () => {
+      patchView(viewKey, { scrollTop: el.scrollTop });
+    };
+  }, [viewKey, wrap, virtualizer, patchView]);
 
   // wrap에서 잰 행 높이는 nowrap에서 무효다. nowrap에서는 measureElement를 붙이지
   // 않아 다시 재지 않으므로, 측정 캐시를 비우지 않으면 늘어난 높이가 그대로 남아
