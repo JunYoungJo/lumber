@@ -2,18 +2,20 @@
 
 <img src="src-tauri/icons/128x128@2x.png" alt="Lumber" width="112" height="112" />
 
-# Lumber
+# Lumber — Desktop Log Viewer
 
-**A modern, good-looking desktop log viewer.**
+**A free, open-source desktop log viewer for macOS and Windows.**
 
-Tail logs live, search and filter without losing your place, and actually enjoy reading them.
+Follow logs in real time, search and filter plain-text or JSON Lines logs, and compare files side by side with split panes and tab groups.
+
+[Download for macOS and Windows](https://github.com/JunYoungJo/lumber/releases/latest)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Rust](https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Platform](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-lightgrey)
+![Platform](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Windows-lightgrey)
 
 <img src="docs/screenshots/hero.png" alt="Lumber main window" width="900" />
 
@@ -21,7 +23,7 @@ Tail logs live, search and filter without losing your place, and actually enjoy 
 
 > Raw **logs** are just timber. Lumber planes them into something you can build with.
 
-Lumber is a desktop log viewer that tries to be genuinely pleasant to use: a clean, modern interface with the conveniences that make reading logs less tedious — live tail, search with highlighting, non-destructive filters, a command palette, split views, bookmarks, and a light or dark theme. It's a focused, read-only viewer, not a log platform.
+Lumber opens local log files without modifying them. It indexes files and reads lines on demand, with search highlighting, non-destructive filters, bookmarks, a command palette, and light and dark themes. Use it to inspect application logs, troubleshoot errors, and watch new lines arrive with live tail.
 
 ## Features
 
