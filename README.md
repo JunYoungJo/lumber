@@ -68,9 +68,9 @@ On Windows, prefer the `.msi`. A `-setup.exe` is also published, but updates shi
 
 Once installed, Lumber checks for a new release at startup and shows a badge in the title bar when one exists. You choose whether to install it and when to restart. There's also a *Check for updates* entry in the command palette.
 
-Lumber isn't code-signed yet, so the first launch shows a warning:
+Lumber has no Apple Developer ID or Windows code-signing certificate, so the first launch is blocked or shows a warning:
 
-- **macOS** — right-click the app and choose *Open*, then confirm. Only needed once.
+- **macOS** — builds are ad-hoc signed and not notarized. Try to open the app once, then go to *System Settings → Privacy & Security* and click *Open Anyway*. Only needed once.
 - **Windows** — SmartScreen shows "Windows protected your PC". Click *More info* → *Run anyway*.
 
 Updates install in place and don't repeat these steps.

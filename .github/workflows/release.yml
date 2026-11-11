@@ -14,8 +14,10 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            target: 'aarch64-apple-darwin'
             args: '--target aarch64-apple-darwin'
           - platform: 'macos-latest'
+            target: 'x86_64-apple-darwin'
             args: '--target x86_64-apple-darwin'
           - platform: 'windows-latest'
             args: ''
@@ -110,6 +112,16 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      # Developer ID 인증서 없이 ad-hoc 서명(tauri.conf.json의 signingIdentity "-")으로
+      # 배포한다. 서명이 깨진 번들이 공개되지 않도록 여기서 실패시킨다. 이 잡이 실패하면
+      # release-notes 잡이 돌지 않고 릴리즈는 초안으로 남는다.
+      - name: verify macOS signatures in the app, updater archive, and DMG
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        env:
+          BUILD_TARGET: ${{ matrix.target }}
+        run: bash tools/verify-macos-bundles.sh "src-tauri/target/$BUILD_TARGET/release/bundle"
 
   release-notes:
     needs: build
