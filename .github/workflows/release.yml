@@ -42,6 +42,7 @@ jobs:
           cache: 'pnpm'
 
       - name: validate release notes
+        shell: bash
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: node tools/release-notes.mjs validate "$RELEASE_TAG"
