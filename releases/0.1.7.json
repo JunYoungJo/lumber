@@ -1,0 +1,4 @@
+{
+  "en": "Release notes now follow the app's selected language.\n\n- Show English or Korean release notes according to the language setting.\n- Switching languages updates an open release notes panel immediately.\n- Use the default notes when a translation is unavailable.\n- Include and validate both translations during release preparation.",
+  "ko": "릴리즈 노트가 앱에서 선택한 언어에 맞게 표시됩니다.\n\n- 언어 설정에 따라 영어 또는 한국어 릴리즈 노트를 표시합니다.\n- 노트를 열어 둔 상태에서 언어를 바꾸면 즉시 반영됩니다.\n- 번역이 없으면 기본 노트를 표시합니다.\n- 배포 준비 시 두 언어의 노트를 함께 포함하고 누락 여부를 검사합니다."
+}

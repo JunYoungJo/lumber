@@ -102,6 +102,12 @@ pnpm test       # run the Vitest suite
 pnpm release <x.y.z>   # bump every version file, commit, and tag
 ```
 
+Before releasing, add and commit `releases/<x.y.z>.json` with non-empty `en`
+and `ko` release notes. The release command and CI validate both translations.
+After all platform builds finish, CI adds them to `latest.json` as `notes_i18n`
+and keeps English in `notes` for older app versions. It also updates the GitHub
+release description with both languages. Verify the draft assets before publishing.
+
 Want a sample file to try it on? `node tools/gen-log.mjs` writes one and keeps appending to it, so you can watch live tail work.
 
 ## Keyboard shortcuts

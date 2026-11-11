@@ -1,5 +1,8 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { badgeVisible, DownloadEvent, setUpdaterIO, UpdateHandle, UpdaterIO, useUpdate } from "./update";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { badgeVisible, DownloadEvent, releaseNotesForLanguage, setUpdaterIO, UpdateHandle, UpdaterIO, useUpdate } from "./update";
+
+const pluginCheck = vi.hoisted(() => vi.fn());
+vi.mock("@tauri-apps/plugin-updater", () => ({ check: pluginCheck }));
 
 function handle(over: Partial<UpdateHandle> = {}): UpdateHandle {
   return {
@@ -26,6 +29,33 @@ beforeEach(() => {
 });
 
 describe("업데이트 확인", () => {
+  it("플러그인의 추가 메타데이터에서 언어별 노트를 읽고 잘못된 번역은 기본 노트로 대체한다", async () => {
+    setUpdaterIO();
+    pluginCheck.mockResolvedValue({
+      version: "0.2.0",
+      body: "Default notes",
+      rawJson: { notes_i18n: { en: "English notes", ko: "한국어 노트" } },
+    });
+    await useUpdate.getState().check(true);
+    expect(releaseNotesForLanguage(useUpdate.getState(), "en")).toBe("English notes");
+    expect(releaseNotesForLanguage(useUpdate.getState(), "ko")).toBe("한국어 노트");
+
+    for (const notes of [undefined, null, [], "wrong", { ko: 123 }, { ko: "  " }]) {
+      pluginCheck.mockResolvedValue({ version: "0.2.0", body: "Default notes", rawJson: { notes_i18n: notes } });
+      await useUpdate.getState().check(true);
+      expect(releaseNotesForLanguage(useUpdate.getState(), "ko")).toBe("Default notes");
+    }
+  });
+
+  it("업데이트가 사라지면 이전 번역 노트도 지운다", async () => {
+    setUpdaterIO(io({ async check() { return handle({ notesI18n: { ko: "한국어 노트" } }); } }));
+    await useUpdate.getState().check(true);
+    setUpdaterIO(io());
+    await useUpdate.getState().check(true);
+    expect(useUpdate.getState().notesI18n).toBeNull();
+    expect(releaseNotesForLanguage(useUpdate.getState(), "ko")).toBeNull();
+  });
+
   it("업데이트가 없으면 idle로 돌아오고 배지가 뜨지 않는다", async () => {
     await useUpdate.getState().check(false);
     const s = useUpdate.getState();

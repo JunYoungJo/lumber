@@ -1,12 +1,15 @@
 import { fmtBytes } from "../format";
 import { useStrings } from "../i18n/useStrings";
-import { badgeVisible, useUpdate } from "../update";
+import { useStore } from "../store";
+import { badgeVisible, releaseNotesForLanguage, useUpdate } from "../update";
 
 // 스토어가 작고 배지가 거의 모든 필드를 읽으므로 선택자 없이 통째로 구독한다.
 // 업데이트 상태는 초당 수십 번 바뀌지 않아 재렌더 비용이 문제되지 않는다.
 export function UpdateBadge() {
   const s = useUpdate();
   const S = useStrings();
+  const lang = useStore((state) => state.lang);
+  const notes = releaseNotesForLanguage(s, lang);
   if (!badgeVisible(s)) return null;
 
   const known = s.total > 0;
@@ -45,10 +48,10 @@ export function UpdateBadge() {
             {s.phase === "available" && s.version && (
               <>
                 <div className="upd-line">{S.update.available(s.version)}</div>
-                {s.notes && (
+                {notes && (
                   <>
                     <div className="upd-sub">{S.update.notesHead}</div>
-                    <div className="upd-notes">{s.notes}</div>
+                    <div className="upd-notes">{notes}</div>
                   </>
                 )}
                 <div className="mi" onClick={() => void s.install()}>

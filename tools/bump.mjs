@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadReleaseNotes } from "./release-notes.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -36,6 +37,14 @@ function main() {
   const status = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" });
   if (status.trim() !== "") {
     console.error("작업 트리가 깨끗하지 않습니다. 먼저 커밋하거나 stash 하세요.");
+    process.exit(1);
+  }
+
+  // 버전 파일을 쓰거나 태그를 만들기 전에 양쪽 언어의 노트를 확인한다.
+  try {
+    loadReleaseNotes(version);
+  } catch (error) {
+    console.error(error.message);
     process.exit(1);
   }
 

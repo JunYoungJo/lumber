@@ -41,6 +41,11 @@ jobs:
           node-version: lts/*
           cache: 'pnpm'
 
+      - name: validate release notes
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node tools/release-notes.mjs validate "$RELEASE_TAG"
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -104,3 +109,27 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+  release-notes:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      # 모든 플랫폼의 업로드가 끝난 뒤 한 번만 수정해 latest.json 경합을 피한다.
+      - name: attach localized release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          NOTES_DIR: ${{ runner.temp }}/release-notes
+        run: |
+          mkdir -p "$NOTES_DIR"
+          gh release download "$RELEASE_TAG" --pattern latest.json --dir "$NOTES_DIR"
+          node tools/release-notes.mjs apply "$RELEASE_TAG" "$NOTES_DIR/latest.json" "$NOTES_DIR/body.md"
+          gh release upload "$RELEASE_TAG" "$NOTES_DIR/latest.json" --clobber
+          gh release edit "$RELEASE_TAG" --notes-file "$NOTES_DIR/body.md"

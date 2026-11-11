@@ -1,4 +1,17 @@
 import { create } from "zustand";
+import type { Lang } from "./i18n";
+
+export type LocalizedNotes = Partial<Record<Lang, string>>;
+
+function readLocalizedNotes(value: unknown): LocalizedNotes | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  const notes: LocalizedNotes = {};
+  for (const lang of ["en", "ko"] as const) {
+    if (typeof source[lang] === "string" && source[lang].trim()) notes[lang] = source[lang];
+  }
+  return notes;
+}
 
 export type UpdatePhase = "idle" | "checking" | "available" | "downloading" | "ready" | "error";
 
@@ -11,6 +24,7 @@ export type DownloadEvent =
 export interface UpdateHandle {
   version: string;
   notes: string | null;
+  notesI18n?: LocalizedNotes | null;
   downloadAndInstall(onProgress: (e: DownloadEvent) => void): Promise<void>;
 }
 
@@ -30,6 +44,7 @@ const tauriIO: UpdaterIO = {
     return {
       version: u.version,
       notes: u.body ?? null,
+      notesI18n: readLocalizedNotes(u.rawJson?.notes_i18n),
       downloadAndInstall: (onProgress) => u.downloadAndInstall(onProgress),
     };
   },
@@ -43,7 +58,7 @@ let io: UpdaterIO = tauriIO;
 let pending: UpdateHandle | null = null;
 
 /// 테스트 전용. 프로덕션 코드에서 부르지 않는다.
-export function setUpdaterIO(next: UpdaterIO): void {
+export function setUpdaterIO(next: UpdaterIO = tauriIO): void {
   io = next;
 }
 
@@ -51,6 +66,7 @@ export interface UpdateState {
   phase: UpdatePhase;
   version: string | null;
   notes: string | null;
+  notesI18n: LocalizedNotes | null;
   downloaded: number;
   total: number;
   error: string | null;
@@ -66,6 +82,7 @@ const INITIAL = {
   phase: "idle" as UpdatePhase,
   version: null as string | null,
   notes: null as string | null,
+  notesI18n: null as LocalizedNotes | null,
   downloaded: 0,
   total: 0,
   error: null as string | null,
@@ -92,11 +109,11 @@ export const useUpdate = create<UpdateState>((set, get) => ({
       const u = await io.check();
       if (!u) {
         pending = null;
-        set({ phase: "idle", version: null, notes: null });
+        set({ phase: "idle", version: null, notes: null, notesI18n: null });
         return;
       }
       pending = u;
-      set({ phase: "available", version: u.version, notes: u.notes });
+      set({ phase: "available", version: u.version, notes: u.notes, notesI18n: u.notesI18n ?? null });
     } catch (e) {
       // 오프라인·프록시·GitHub 장애는 흔하다. 요청하지 않은 사용자를 방해하지 않는다.
       if (manual) set({ phase: "error", error: String(e) });
@@ -123,6 +140,11 @@ export const useUpdate = create<UpdateState>((set, get) => ({
     await io.relaunch();
   },
 }));
+
+// 표시할 때 선택해야 업데이트를 다시 확인하지 않고 언어 전환에 반영된다.
+export function releaseNotesForLanguage(s: Pick<UpdateState, "notes" | "notesI18n">, lang: Lang): string | null {
+  return s.notesI18n?.[lang] ?? s.notes;
+}
 
 /// 배지를 그릴지. checking/idle은 알릴 가치가 없어 숨기되, 수동 확인으로 팝오버가 열려 있으면
 /// 팝오버의 기준점이 필요하므로 보인다.
