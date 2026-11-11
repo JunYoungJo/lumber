@@ -32,11 +32,13 @@ export class SmoothFollower {
 
   step(dtMs: number): FollowStep {
     const cur = this.io.scrollTop();
-    if (this.lastWritten !== null && cur < this.lastWritten - INTERRUPT_EPS) {
+    const target = this.io.maxScroll();
+    // 줄바꿈 해제 등으로 높이가 줄면 브라우저가 새 스크롤 하단으로 보정한다.
+    // 이전 하단과의 차이는 사용자 개입이 아니므로 새 하단을 기준으로 비교한다.
+    if (this.lastWritten !== null && cur < Math.min(this.lastWritten, target) - INTERRUPT_EPS) {
       this.lastWritten = null;
       return "interrupted";
     }
-    const target = this.io.maxScroll();
     const dist = target - cur;
     if (dist <= 0.5) {
       this.lastWritten = cur;

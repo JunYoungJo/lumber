@@ -117,7 +117,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
     initialOffset: view?.scrollTop ?? 0,
   });
 
-  // 탭을 떠나거나 wrap이 스크롤 DOM을 교체하기 전에 위치를 저장한다.
+  // 탭을 떠나기 전에 위치를 저장한다. 줄바꿈 전환은 같은 스크롤 DOM을 쓴다.
   // layout cleanup에서 기존 엘리먼트를 읽어야 DOM 제거/축소로 인한 0을 저장하지 않는다.
   useLayoutEffect(() => {
     const el = parentRef.current;
@@ -126,14 +126,27 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
     return () => {
       patchView(viewKey, { scrollTop: el.scrollTop });
     };
-  }, [viewKey, wrap, virtualizer, patchView]);
+  }, [viewKey, virtualizer, patchView]);
 
   // wrap에서 잰 행 높이는 nowrap에서 무효다. nowrap에서는 measureElement를 붙이지
   // 않아 다시 재지 않으므로, 측정 캐시를 비우지 않으면 늘어난 높이가 그대로 남아
   // 행 사이가 빈 줄처럼 벌어진다.
-  useEffect(() => {
-    virtualizer.measure();
-  }, [virtualizer, wrap]);
+  const wrapAnchor = useRef<{ viewKey: string; index: number } | null>(null);
+  useLayoutEffect(() => {
+    // 높이 변경에 따른 스크롤 보정을 사용자 입력으로 처리하지 않는다.
+    progScroll.current = Date.now();
+    const anchor = wrapAnchor.current;
+    if (!wrap) virtualizer.measure();
+    // 새 높이에 맞춘 행 위치로 복원한다. 픽셀 위치는 줄바꿈 전후에 달라진다.
+    if (anchor?.viewKey === viewKey && !useStore.getState().viewStates[viewKey]?.follow) {
+      virtualizer.scrollToIndex(anchor.index, { align: "start" });
+    }
+    return () => {
+      const el = parentRef.current;
+      const item = el && virtualizer.getVirtualItemForOffset(el.scrollTop);
+      wrapAnchor.current = item ? { viewKey, index: item.index } : null;
+    };
+  }, [virtualizer, wrap, viewKey]);
 
   useEffect(() => {
     registerBus(viewKey, {
@@ -207,14 +220,14 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
   function onScroll() {
     const el = parentRef.current;
     if (!el) return;
+    // follower와 줄바꿈 재측정이 만드는 프로그램적 스크롤은 무시한다.
+    // follow 해제는 wheel(즉시)과 follower의 개입 감지가 담당한다.
+    if (Date.now() - progScroll.current < 300) return;
     const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - ROW_H * 1.5;
     if (atBottom) {
       if (!follow) patchView(viewKey, { follow: true, pendingNew: 0 });
       return;
     }
-    // follower가 활강 중 만들어내는 프로그램적 스크롤은 무시한다.
-    // follow 해제는 wheel(즉시)과 follower의 개입 감지가 담당한다.
-    if (Date.now() - progScroll.current < 300) return;
     if (follow) patchView(viewKey, { follow: false });
   }
 
@@ -249,7 +262,7 @@ export function LogList({ viewKey, tabId }: { viewKey: string; tabId: number }) 
 
   return (
     <div className="logwrap">
-      <div className="loglist" key={wrap ? "wrap" : "nowrap"} ref={parentRef} onScroll={onScroll} onWheel={onWheel} tabIndex={-1}>
+      <div className="loglist" ref={parentRef} onScroll={onScroll} onWheel={onWheel} tabIndex={-1}>
         <div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
           {virtualizer.getVirtualItems().map((vi) => {
             const cached = lineCache.get(tabId, vi.index);

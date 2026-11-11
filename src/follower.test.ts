@@ -95,4 +95,25 @@ describe("SmoothFollower", () => {
     expect(f.step(DT)).toBe("idle");
     expect(io.writes.length).toBe(0);
   });
+
+  it("줄바꿈 해제로 하단이 줄어든 뒤에도 추적을 유지한다", () => {
+    const io = new FakeIO();
+    io.max = io.pos = 1500;
+    const f = new SmoothFollower(io);
+    expect(f.step(DT)).toBe("idle");
+    io.max = io.pos = 500; // 브라우저가 새 하단으로 scrollTop을 제한한다
+    expect(f.step(DT)).toBe("idle");
+    io.max = 740;
+    expect(f.step(DT)).toBe("moving");
+  });
+
+  it("높이가 줄어도 새 하단보다 위로 스크롤한 사용자 개입은 감지한다", () => {
+    const io = new FakeIO();
+    io.max = io.pos = 1500;
+    const f = new SmoothFollower(io);
+    f.step(DT);
+    io.max = 500;
+    io.pos = 400;
+    expect(f.step(DT)).toBe("interrupted");
+  });
 });
